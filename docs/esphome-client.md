@@ -536,7 +536,7 @@ resorting to `any`.
 | <a id="date"></a> `date` | [`DateEvent`](#dateevent) | - |
 | <a id="datetime"></a> `datetime` | [`DateTimeEvent`](#datetimeevent) | - |
 | <a id="deviceinfo-2"></a> `deviceInfo` | [`DeviceInfo`](#deviceinfo-3) | - |
-| <a id="disconnect-2"></a> `disconnect` | `undefined` \| `string` | - |
+| <a id="disconnect-2"></a> `disconnect` | `string` \| `undefined` | - |
 | <a id="entities"></a> `entities` | `Record`\<`string`, `unknown`\> | - |
 | <a id="event"></a> `event` | [`EventEntityEvent`](#evententityevent) | - |
 | <a id="fan-1"></a> `fan` | [`FanEvent`](#fanevent) | - |
@@ -1758,14 +1758,14 @@ services.forEach(service => {
 ##### getVoiceAssistantConfiguration()
 
 ```ts
-getVoiceAssistantConfiguration(): null | VoiceAssistantConfiguration;
+getVoiceAssistantConfiguration(): VoiceAssistantConfiguration | null;
 ```
 
 Get the current voice assistant configuration.
 
 ###### Returns
 
-`null` \| [`VoiceAssistantConfiguration`](#voiceassistantconfiguration-1)
+[`VoiceAssistantConfiguration`](#voiceassistantconfiguration-1) \| `null`
 
 The voice assistant configuration or null if not available.
 

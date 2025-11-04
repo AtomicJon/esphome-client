@@ -91,7 +91,7 @@ warn(message, ...parameters): void;
 
 ## Type Aliases
 
-### Nullable\<T\>
+### Nullable
 
 ```ts
 type Nullable<T> = T | null;

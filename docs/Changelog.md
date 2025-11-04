@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file. This project tries to use [semantic versioning](https://semver.org/).
 
+## 1.2.0 (2025-11-03)
+  * ESPHome 2025.10 and beyond compatibility.
+  * Housekeeping.
+
 ## 1.1.2 (2025-09-01)
   * Housekeeping.
 
