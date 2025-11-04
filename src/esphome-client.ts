@@ -448,7 +448,9 @@ enum MessageType {
 
   HELLO_REQUEST                                 = 1,
   HELLO_RESPONSE                                = 2,
+  AUTHENTICATION_REQUEST                        = 3,
   CONNECT_REQUEST                               = 3,
+  AUTHENTICATION_RESPONSE                       = 4,
   CONNECT_RESPONSE                              = 4,
   DISCONNECT_REQUEST                            = 5,
   DISCONNECT_RESPONSE                           = 6,
@@ -2385,11 +2387,19 @@ export class EspHomeClient extends EventEmitter {
           }
         }
 
-        // Send the connect request to complete the protocol handshake.
-        this.frameAndSend(MessageType.CONNECT_REQUEST, Buffer.alloc(0));
+        // In ESPHome 2025.10+, authentication messages are only used when password authentication is enabled. For unauthenticated connections, we skip directly to entity
+        // enumeration and device info after the HELLO handshake.
+        this.emit("connect", this.usingEncryption);
+
+        // Start entity enumeration immediately for unauthenticated connections.
+        this.frameAndSend(MessageType.LIST_ENTITIES_REQUEST, Buffer.alloc(0));
+
+        // Query device information.
+        this.frameAndSend(MessageType.DEVICE_INFO_REQUEST, Buffer.alloc(0));
 
         break;
 
+      case MessageType.AUTHENTICATION_RESPONSE:
       case MessageType.CONNECT_RESPONSE:
 
         // Emit connect event for our clients to indicate we are ready.
