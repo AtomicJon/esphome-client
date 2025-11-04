@@ -1418,6 +1418,9 @@ export class EspHomeClient extends EventEmitter {
   // Promise resolver for noise key set operations.
   private noiseKeySetResolver: Nullable<(success: boolean) => void>;
 
+  // Device API minor version for protocol compatibility checks.
+  private deviceApiMinorVersion: number;
+
   /**
    * Creates a new ESPHome client instance. The client can be configured for both encrypted and unencrypted connections depending on the provided options. When a PSK
    * is provided, the client will automatically attempt encryption first and fall back to plaintext if the device doesn't support it.
@@ -1486,6 +1489,7 @@ export class EspHomeClient extends EventEmitter {
     this.connectionTimer = null;
     this.usingEncryption = false;
     this.noiseKeySetResolver = null;
+    this.deviceApiMinorVersion = 0;
 
     // Validate the encryption key format if provided.
     if(this.encryptionKey) {
@@ -1538,6 +1542,7 @@ export class EspHomeClient extends EventEmitter {
     this.connectionState = ConnectionState.INITIAL;
     this.usingEncryption = false;
     this.noiseKeySetResolver = null;
+    this.deviceApiMinorVersion = 0;
 
     // Create the initial connection.
     this.createConnection();
@@ -1832,6 +1837,9 @@ export class EspHomeClient extends EventEmitter {
 
     // Check protocol version compatibility.
     if((majorVersion !== undefined) && (minorVersion !== undefined)) {
+
+      // Store the device API version for protocol compatibility checks.
+      this.deviceApiMinorVersion = minorVersion;
 
       this.log.debug("ESPHome API version: " + majorVersion + "." + minorVersion + " (client supports: " + ProtocolVersion.MAJOR + "." + ProtocolVersion.MINOR + ")");
 
@@ -2387,8 +2395,20 @@ export class EspHomeClient extends EventEmitter {
           }
         }
 
-        // In ESPHome 2025.10+, authentication messages are only used when password authentication is enabled. For unauthenticated connections, we skip directly to entity
+        // ESPHome API 1.11 (introduced in ESPHome 2025.8.0) made the CONNECT_REQUEST optional for passwordless connections. For older versions, we must send
+        // CONNECT_REQUEST and wait for CONNECT_RESPONSE before proceeding to entity enumeration.
+        if(this.deviceApiMinorVersion < 11) {
+
+          // For API versions before 1.11, we must complete the legacy handshake by sending CONNECT_REQUEST.
+          this.log.debug("Using legacy handshake for API version 1." + this.deviceApiMinorVersion + ". Sending CONNECT_REQUEST.");
+          this.frameAndSend(MessageType.CONNECT_REQUEST, Buffer.alloc(0));
+
+          break;
+        }
+
+        // For API 1.11+, authentication messages are only used when password authentication is enabled. For unauthenticated connections, we skip directly to entity
         // enumeration and device info after the HELLO handshake.
+        this.log.debug("Using modern handshake for API version 1." + this.deviceApiMinorVersion + ". Skipping CONNECT_REQUEST.");
         this.emit("connect", this.usingEncryption);
 
         // Start entity enumeration immediately for unauthenticated connections.
