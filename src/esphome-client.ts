@@ -481,8 +481,13 @@ enum MessageType {
   FAN_COMMAND_REQUEST                           = 31,
   LIGHT_COMMAND_REQUEST                         = 32,
   SWITCH_COMMAND_REQUEST                        = 33,
+  SUBSCRIBE_HOMEASSISTANT_SERVICES_REQUEST      = 34,
+  HOMEASSISTANT_SERVICE_RESPONSE                = 35,
   GET_TIME_REQUEST                              = 36,
   GET_TIME_RESPONSE                             = 37,
+  SUBSCRIBE_HOME_ASSISTANT_STATES_REQUEST       = 38,
+  SUBSCRIBE_HOME_ASSISTANT_STATE_RESPONSE       = 39,
+  HOME_ASSISTANT_STATE_RESPONSE                 = 40,
   LIST_ENTITIES_SERVICES_RESPONSE               = 41,
   EXECUTE_SERVICE_REQUEST                       = 42,
   LIST_ENTITIES_CAMERA_RESPONSE                 = 43,
@@ -703,6 +708,38 @@ interface VoiceAssistantAudioData {
 
   data: Buffer;
   end: boolean;
+}
+
+/**
+ * Home Assistant service call event data. This is emitted when an ESPHome device triggers a `homeassistant.action` or `homeassistant.service` call.
+ *
+ * @property data - Key-value data for the service call.
+ * @property dataTemplate - Templated key-value data for the service call.
+ * @property isEvent - Whether this is an event (true) or a service call (false).
+ * @property service - The service being called (e.g., "notify.html5").
+ * @property variables - Variables for template rendering.
+ */
+export interface HomeAssistantServiceEvent {
+
+  data: Record<string, string>;
+  dataTemplate: Record<string, string>;
+  isEvent: boolean;
+  service: string;
+  variables: Record<string, string>;
+}
+
+/**
+ * Home Assistant state request event data. This is emitted when an ESPHome device requests the state of a Home Assistant entity.
+ *
+ * @property attribute - The specific attribute being requested (empty string if requesting the main state).
+ * @property entityId - The Home Assistant entity ID being requested.
+ * @property once - Whether this is a one-time request (true) or a subscription (false).
+ */
+export interface HomeAssistantStateRequest {
+
+  attribute: string;
+  entityId: string;
+  once: boolean;
 }
 
 /**
@@ -2568,6 +2605,20 @@ export class EspHomeClient extends EventEmitter {
 
         break;
 
+      case MessageType.HOMEASSISTANT_SERVICE_RESPONSE:
+
+        // Handle Home Assistant service call from the device.
+        this.handleHomeassistantServiceResponse(payload);
+
+        break;
+
+      case MessageType.SUBSCRIBE_HOME_ASSISTANT_STATE_RESPONSE:
+
+        // Handle Home Assistant state request from the device.
+        this.handleSubscribeHomeAssistantStateResponse(payload);
+
+        break;
+
       case MessageType.NOISE_ENCRYPTION_SET_KEY_RESPONSE:
 
         // Process the noise encryption key set response.
@@ -2935,6 +2986,78 @@ export class EspHomeClient extends EventEmitter {
     this.emit("voiceAssistantAudio", audioData);
 
     this.log.debug("Voice assistant audio received - size: " + data.length + " bytes | end: " + end);
+  }
+
+  /**
+   * Handle Home Assistant service call response from the ESPHome device. This is emitted when the device triggers a `homeassistant.action` or `homeassistant.service`
+   * call expecting a Home Assistant instance to execute the action.
+   *
+   * @param payload - The service call response payload.
+   */
+  private handleHomeassistantServiceResponse(payload: Buffer): void {
+
+    // Decode the protobuf fields from the payload according to HomeassistantServiceResponse.
+    const fields = this.decodeProtobuf(payload);
+
+    // Extract service name from field 1.
+    const service = this.extractStringField(fields, 1) ?? "";
+
+    // Extract data, data_template, and variables from repeated map fields.
+    const data = this.extractRepeatedServiceMap(fields, 2);
+    const dataTemplate = this.extractRepeatedServiceMap(fields, 3);
+    const variables = this.extractRepeatedServiceMap(fields, 4);
+
+    // Extract is_event flag from field 5.
+    const isEvent = this.extractNumberField(fields, 5) === 1;
+
+    // Create the service event.
+    const serviceEvent: HomeAssistantServiceEvent = {
+
+      data,
+      dataTemplate,
+      isEvent,
+      service,
+      variables
+    };
+
+    // Emit the homeassistantService event.
+    this.emit("homeassistantService", serviceEvent);
+
+    this.log.debug("Home Assistant service call received - service: " + service + " | isEvent: " + isEvent);
+  }
+
+  /**
+   * Handle Home Assistant state request from the ESPHome device. This is emitted when the device requests the state of a Home Assistant entity, typically used when
+   * ESPHome has an `on_value` trigger that references Home Assistant state.
+   *
+   * @param payload - The state request payload.
+   */
+  private handleSubscribeHomeAssistantStateResponse(payload: Buffer): void {
+
+    // Decode the protobuf fields from the payload according to SubscribeHomeAssistantStateResponse.
+    const fields = this.decodeProtobuf(payload);
+
+    // Extract entity_id from field 1.
+    const entityId = this.extractStringField(fields, 1) ?? "";
+
+    // Extract attribute from field 2.
+    const attribute = this.extractStringField(fields, 2) ?? "";
+
+    // Extract once flag from field 3.
+    const once = this.extractNumberField(fields, 3) === 1;
+
+    // Create the state request event.
+    const stateRequest: HomeAssistantStateRequest = {
+
+      attribute,
+      entityId,
+      once
+    };
+
+    // Emit the homeassistantStateRequest event.
+    this.emit("homeassistantStateRequest", stateRequest);
+
+    this.log.debug("Home Assistant state request received - entityId: " + entityId + " | attribute: " + attribute + " | once: " + once);
   }
 
   /**
@@ -4125,6 +4248,43 @@ export class EspHomeClient extends EventEmitter {
     const raw = fields[fieldNum]?.[0];
 
     return (typeof raw === "number") ? raw : undefined;
+  }
+
+  /**
+   * Extract repeated HomeAssistantServiceMap fields and convert to a Record. This handles the repeated nested message pattern used for data, data_template, and
+   * variables fields in HomeassistantServiceResponse.
+   *
+   * @param fields - The decoded protobuf fields.
+   * @param fieldNum - The field number containing the repeated map entries.
+   * @returns A Record mapping keys to values.
+   */
+  private extractRepeatedServiceMap(fields: Record<number, FieldValue[]>, fieldNum: number): Record<string, string> {
+
+    const result: Record<string, string> = {};
+    const mapFields = fields[fieldNum];
+
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    if(!mapFields || !Array.isArray(mapFields)) {
+
+      return result;
+    }
+
+    for(const mapBuffer of mapFields) {
+
+      if(Buffer.isBuffer(mapBuffer)) {
+
+        const mapMsg = this.decodeProtobuf(mapBuffer);
+        const key = this.extractStringField(mapMsg, 1);
+        const value = this.extractStringField(mapMsg, 2);
+
+        if((key !== undefined) && (value !== undefined)) {
+
+          result[key] = value;
+        }
+      }
+    }
+
+    return result;
   }
 
   /**
@@ -6451,6 +6611,105 @@ export class EspHomeClient extends EventEmitter {
 
     this.frameAndSend(MessageType.SUBSCRIBE_VOICE_ASSISTANT_REQUEST, payload);
     this.voiceAssistantSubscribed = false;
+  }
+
+  /**
+   * Subscribe to Home Assistant service calls from the ESPHome device. When subscribed, the client will receive `homeassistantService` events whenever the device
+   * triggers a `homeassistant.action` or `homeassistant.service` call in its ESPHome configuration.
+   *
+   * @example
+   * ```typescript
+   * // Subscribe to Home Assistant service calls.
+   * client.subscribeHomeAssistantServices();
+   *
+   * // Handle service call events.
+   * client.on("homeassistantService", (event) => {
+   *
+   *   console.log("Service: " + event.service);
+   *   console.log("Data: " + JSON.stringify(event.data));
+   * });
+   * ```
+   */
+  public subscribeHomeAssistantServices(): void {
+
+    this.log.debug("Subscribing to Home Assistant services.");
+
+    // Send empty SubscribeHomeassistantServicesRequest message.
+    this.frameAndSend(MessageType.SUBSCRIBE_HOMEASSISTANT_SERVICES_REQUEST, Buffer.alloc(0));
+  }
+
+  /**
+   * Subscribe to Home Assistant state requests from the ESPHome device. When subscribed, the client will receive `homeassistantStateRequest` events whenever the
+   * device wants to import the state of a Home Assistant entity.
+   *
+   * @example
+   * ```typescript
+   * // Subscribe to Home Assistant state requests.
+   * client.subscribeHomeAssistantStates();
+   *
+   * // Handle state request events and respond with the requested state.
+   * client.on("homeassistantStateRequest", (request) => {
+   *
+   *   // Look up the state in your system and send it back.
+   *   const state = getHomeAssistantState(request.entityId, request.attribute);
+   *
+   *   client.sendHomeAssistantState(request.entityId, state, request.attribute);
+   * });
+   * ```
+   */
+  public subscribeHomeAssistantStates(): void {
+
+    this.log.debug("Subscribing to Home Assistant state requests.");
+
+    // Send empty SubscribeHomeAssistantStatesRequest message.
+    this.frameAndSend(MessageType.SUBSCRIBE_HOME_ASSISTANT_STATES_REQUEST, Buffer.alloc(0));
+  }
+
+  /**
+   * Send a Home Assistant entity state to the ESPHome device. This is used to respond to `homeassistantStateRequest` events when the device needs the current state
+   * of a Home Assistant entity.
+   *
+   * @param entityId - The Home Assistant entity ID.
+   * @param state - The current state value as a string.
+   * @param attribute - The specific attribute (optional, empty string for main state).
+   *
+   * @example
+   * ```typescript
+   * // Send state for the main entity state.
+   * client.sendHomeAssistantState("sensor.temperature", "21.5");
+   *
+   * // Send state for a specific attribute.
+   * client.sendHomeAssistantState("climate.living_room", "22", "temperature");
+   * ```
+   */
+  public sendHomeAssistantState(entityId: string, state: string, attribute: string = ""): void {
+
+    this.log.debug("Sending Home Assistant state - entityId: " + entityId + " | state: " + state + " | attribute: " + attribute);
+
+    // Build the HomeAssistantStateResponse message.
+    const fields: ProtoField[] = [];
+
+    // Add entity_id (field 1: string).
+    const entityIdBuf = Buffer.from(entityId, "utf8");
+
+    fields.push({ fieldNumber: 1, value: entityIdBuf, wireType: WireType.LENGTH_DELIMITED });
+
+    // Add state (field 2: string).
+    const stateBuf = Buffer.from(state, "utf8");
+
+    fields.push({ fieldNumber: 2, value: stateBuf, wireType: WireType.LENGTH_DELIMITED });
+
+    // Add attribute (field 3: string) if provided.
+    if(attribute.length > 0) {
+
+      const attributeBuf = Buffer.from(attribute, "utf8");
+
+      fields.push({ fieldNumber: 3, value: attributeBuf, wireType: WireType.LENGTH_DELIMITED });
+    }
+
+    const payload = this.encodeProtoFields(fields);
+
+    this.frameAndSend(MessageType.HOME_ASSISTANT_STATE_RESPONSE, payload);
   }
 
   /**
