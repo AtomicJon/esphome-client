@@ -7,4 +7,5 @@
 // Export our API.
 export * from "./crypto-noise.js";
 export * from "./esphome-client.js";
+export * from "./types.js";
 
