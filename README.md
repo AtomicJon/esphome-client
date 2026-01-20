@@ -179,169 +179,263 @@ The CLI supports all ESPHome entity types including switches, lights, covers, fa
 
 ### Basic Connection
 ```typescript
-import { EspHomeClient, LogLevel } from 'esphome-client';
+import { EspHomeClient, LogLevel } from "esphome-client";
 
-// Create a client with automatic reconnection
+// Create a client instance. Available options: clientId, host (required), logger, port, psk, serverName.
 const client = new EspHomeClient({
-  host: '192.168.1.100',
-  port: 6053,  // Default ESPHome API port
-  reconnect: true,
-  reconnectInterval: 15000,
-  connectionTimeout: 30000,
-  clientId: 'my-app',
-  logger: console  // Or your custom logger
+  clientId: "my-esphome-app",
+  host: "192.168.1.100",
+  port: 6053
 });
 
-// Listen for connection events
-client.on('connect', ({ encrypted }) => {
-  console.log(`Connected to ESPHome device (encrypted: ${encrypted})`);
+// Listen for connection events. The callback receives a boolean indicating if the connection is encrypted.
+client.on("connect", (encrypted) => {
+  console.log("Connected to ESPHome device (encrypted: " + encrypted + ")");
 
-  // Subscribe to device logs
+  // Subscribe to device logs at INFO level.
   client.subscribeToLogs(LogLevel.INFO);
 
-  // Log all discovered entities
+  // Log all discovered entity IDs to help identify available entities.
   client.logAllEntityIds();
 });
 
-// Listen for discovered entities
-client.on('entities', (entities) => {
-  console.log('Discovered entities:', entities);
+// Listen for discovered entities. This fires after the device reports all configured entities.
+client.on("entities", (entities) => {
+  console.log("Discovered entities:", entities);
 });
 
-// Listen for device information
-client.on('deviceInfo', (info) => {
-  console.log(`Device: ${info.name} v${info.esphomeVersion}`);
-  console.log(`Model: ${info.model}, MAC: ${info.macAddress}`);
+// Listen for device information. Contains device name, version, model, MAC address, and more.
+client.on("deviceInfo", (info) => {
+  console.log("Device: " + info.name + " v" + info.esphomeVersion);
+  console.log("Model: " + info.model + ", MAC: " + info.macAddress);
 });
 
-// Connect to the device
-await client.connect();
+// Handle disconnection events.
+client.on("disconnect", (reason) => {
+  console.log("Disconnected from device: " + reason);
+});
+
+// Connect to the device. This is a synchronous call that initiates the connection.
+client.connect();
 ```
 
 ### Encrypted Connection
 ```typescript
-// Create a client with encryption
+import { EspHomeClient } from "esphome-client";
+
+// Create a client with encryption using the pre-shared key from your ESPHome YAML configuration.
+// The psk value should be the base64-encoded key from your ESPHome device's api.encryption.key setting.
 const client = new EspHomeClient({
-  host: '192.168.1.100',
-  port: 6053,
-  encryptionKey: 'your-base64-encoded-32-byte-key',  // From your ESPHome YAML api.encryption.key
-  clientId: 'my-secure-app'
+  host: "192.168.1.100",
+  psk: "your-base64-encoded-psk-from-esphome-yaml"
 });
 
-// The client will automatically use encryption if the key is provided
-// and fall back to plaintext if the device doesn't support it
-await client.connect();
+// The client will automatically attempt encrypted connection when psk is provided.
+// If the device does not support encryption, it falls back to plaintext automatically.
+client.on("connect", (encrypted) => {
+  if(encrypted) {
+    console.log("Secure connection established.");
+  } else {
+    console.log("Connected without encryption (device may not support it).");
+  }
+});
+
+client.connect();
 ```
 
 ### Controlling Entities
 ```typescript
-// After entities are discovered...
+import { EspHomeClient, MediaPlayerCommand } from "esphome-client";
 
-// Control switches
-await client.sendSwitchCommand('switch-garage_door', true);
+// All command methods are synchronous (return void) and use entity IDs in the format: {type}-{object_id}
 
-// Control lights with full features
-await client.sendLightCommand('light-living_room', {
+// Control switches - turn on or off.
+client.sendSwitchCommand("switch-garage_light", true);
+client.sendSwitchCommand("switch-garage_light", false);
+
+// Control buttons - trigger a press action.
+client.sendButtonCommand("button-restart");
+
+// Control lights with various options.
+client.sendLightCommand("light-living_room", {
+  brightness: 0.8,
+  colorTemperature: 4000,
+  effect: "Rainbow",
+  rgb: { b: 0, g: 128, r: 255 },
   state: true,
-  brightness: 0.8,  // 80% brightness
-  rgb: { r: 255, g: 0, b: 128 },  // Pink color
-  colorTemperature: 3500,  // Warm white
-  effect: 'rainbow',  // Start effect
-  transition: 2.0  // 2 second transition
+  transitionLength: 2000
 });
 
-// Control covers (garage doors, blinds, etc.)
-await client.sendCoverCommand('cover-garage', { command: 'open' });
-await client.sendCoverCommand('cover-blind', { position: 0.5, tilt: 0.25 });
+// Turn off a light.
+client.sendLightCommand("light-living_room", { state: false });
 
-// Control climate/HVAC
-await client.sendClimateCommand('climate-thermostat', {
-  mode: ClimateMode.HEAT_COOL,
+// Control covers using position (0.0 = closed, 1.0 = open) or stop.
+client.sendCoverCommand("cover-garage_door", { position: 1.0 });
+client.sendCoverCommand("cover-garage_door", { position: 0.0 });
+client.sendCoverCommand("cover-garage_door", { stop: true });
+client.sendCoverCommand("cover-blinds", { position: 0.5, tilt: 0.25 });
+
+// Control climate/HVAC using string mode values.
+client.sendClimateCommand("climate-thermostat", {
+  fanMode: "auto",
+  mode: "heat_cool",
+  swingMode: "vertical",
   targetTemperature: 22,
-  targetTemperatureLow: 20,
   targetTemperatureHigh: 24,
-  fanMode: ClimateFanMode.AUTO
+  targetTemperatureLow: 20
 });
 
-// Control fans
-await client.sendFanCommand('fan-bedroom', {
-  state: true,
-  speedLevel: 75,  // 75% speed
+// Control fans with speed level (0-100), oscillation, and direction.
+client.sendFanCommand("fan-bedroom", {
+  direction: "forward",
   oscillating: true,
-  direction: 'forward'
+  speedLevel: 75,
+  state: true
 });
 
-// Control locks
-await client.sendLockCommand('lock-front_door', LockCommand.LOCK);
-await client.sendLockCommand('lock-front_door', LockCommand.UNLOCK, '1234');
+// Control locks using string commands.
+client.sendLockCommand("lock-front_door", "lock");
+client.sendLockCommand("lock-front_door", "unlock", "1234");
+client.sendLockCommand("lock-front_door", "open");
 
-// Control media players
-await client.sendMediaPlayerCommand('media_player-living_room', {
+// Control media players using the MediaPlayerCommand enum.
+client.sendMediaPlayerCommand("media_player-speaker", {
   command: MediaPlayerCommand.PLAY,
-  volume: 0.5,
-  mediaUrl: 'http://example.com/song.mp3'
+  mediaUrl: "http://example.com/audio.mp3",
+  volume: 0.5
 });
 
-// Execute user-defined services
-await client.executeServiceByName('play_rtttl', [
-  { stringValue: 'mario:d=4,o=5,b=100:16e6,16e6,32p,8e6' }
+// Control number entities.
+client.sendNumberCommand("number-target_temperature", 72.5);
+
+// Control select entities.
+client.sendSelectCommand("select-hvac_mode", "cooling");
+
+// Control text entities.
+client.sendTextCommand("text-device_name", "Living Room Sensor");
+
+// Control date entities.
+client.sendDateCommand("date-schedule", 2025, 12, 25);
+
+// Control time entities.
+client.sendTimeCommand("time-alarm", 7, 30, 0);
+
+// Control datetime entities using epoch seconds.
+client.sendDateTimeCommand("datetime-last_update", Math.floor(Date.now() / 1000));
+
+// Control alarm panels using string commands.
+client.sendAlarmControlPanelCommand("alarm_control_panel-home", "arm_away", "1234");
+client.sendAlarmControlPanelCommand("alarm_control_panel-home", "disarm", "1234");
+
+// Control sirens.
+client.sendSirenCommand("siren-alarm", { duration: 30, state: true, tone: "alarm", volume: 0.8 });
+
+// Control valves using position (0.0 = closed, 1.0 = open).
+client.sendValveCommand("valve-water_main", { position: 1.0 });
+client.sendValveCommand("valve-water_main", { stop: true });
+
+// Check for and install firmware updates.
+client.sendUpdateCommand("update-firmware", "check");
+client.sendUpdateCommand("update-firmware", "update");
+
+// Execute user-defined services by name.
+client.executeServiceByName("play_rtttl", [
+  { stringValue: "mario:d=4,o=5,b=100:16e6,16e6,32p,8e6" }
 ]);
 ```
 
 ### Real-time State Monitoring
 ```typescript
-// Listen to specific entity types
-client.on('sensor', (data) => {
-  if (!data.missingState) {
-    console.log(`${data.entity}: ${data.state} ${data.unitOfMeasurement || ''}`);
+import { EspHomeClient, LogLevel } from "esphome-client";
+
+// Listen to sensor updates. Each event includes entity name, key, state value, and missingState flag.
+client.on("sensor", (data) => {
+  if(!data.missingState) {
+    console.log("Sensor " + data.entity + ": " + data.state);
   }
 });
 
-client.on('binary_sensor', (data) => {
-  console.log(`${data.entity}: ${data.state ? 'ON' : 'OFF'}`);
+// Listen to binary sensor updates. State is a boolean (true/false).
+client.on("binary_sensor", (data) => {
+  console.log("Binary sensor " + data.entity + ": " + (data.state ? "ON" : "OFF"));
 });
 
-client.on('climate', (data) => {
-  console.log(`HVAC: ${ClimateMode[data.mode]}, Current: ${data.currentTemperature}°C, Target: ${data.targetTemperature}°C`);
+// Listen to switch state changes.
+client.on("switch", (data) => {
+  console.log("Switch " + data.entity + ": " + (data.state ? "ON" : "OFF"));
 });
 
-// Listen to all telemetry updates
-client.on('telemetry', (data) => {
-  console.log(`Update from ${data.entity}:`, data);
+// Listen to climate state updates. Contains mode, temperatures, fan mode, and action.
+client.on("climate", (data) => {
+  console.log("Climate " + data.entity + ":");
+  console.log("  Mode: " + data.mode + ", Action: " + data.action);
+  console.log("  Current: " + data.currentTemperature + ", Target: " + data.targetTemperature);
 });
 
-// Monitor device logs
-client.on('log', (data) => {
-  console.log(`[${LogLevel[data.level]}] ${data.message}`);
+// Listen to cover state updates. Contains position, tilt, and current operation.
+client.on("cover", (data) => {
+  console.log("Cover " + data.entity + ": position=" + data.position + ", operation=" + data.currentOperation);
+});
+
+// Listen to light state updates.
+client.on("light", (data) => {
+  console.log("Light " + data.entity + ": " + (data.state ? "ON" : "OFF") + ", brightness=" + data.brightness);
+});
+
+// Listen to all telemetry updates via the generic telemetry event.
+client.on("telemetry", (data) => {
+  console.log("Telemetry [" + data.type + "] " + data.entity + ":", data);
+});
+
+// Monitor device logs. Level is a LogLevel enum value.
+client.on("log", (data) => {
+  console.log("[" + LogLevel[data.level] + "] " + data.message);
 });
 ```
 
 ### Voice Assistant Integration
 ```typescript
-// Subscribe to voice assistant
+import { EspHomeClient, VoiceAssistantEvent, VoiceAssistantSubscribeFlag } from "esphome-client";
+
+// Subscribe to voice assistant with audio streaming support.
 client.subscribeVoiceAssistant(VoiceAssistantSubscribeFlag.API_AUDIO);
 
-// Handle voice assistant requests
-client.on('voiceAssistantRequest', (data) => {
-  if (data.start) {
-    console.log(`Voice session started: ${data.conversationId}`);
-    // Start audio streaming
-    const audioPort = 12345;
-    client.sendVoiceAssistantResponse(audioPort, false);
-  }
+// Handle voice assistant requests from the device.
+client.on("voiceAssistantRequest", (data) => {
+  console.log("Voice request - conversation: " + data.conversationId);
+  console.log("  Flags: " + data.flags + ", wake word: " + data.wakeWordPhrase);
+
+  // Respond with the audio port for streaming (or error flag).
+  const audioPort = 12345;
+  client.sendVoiceAssistantResponse(audioPort, false);
 });
 
-// Send voice assistant events
+// Handle incoming audio data from the device. The event provides data (Buffer) and end (boolean) properties.
+client.on("voiceAssistantAudio", (audioData) => {
+  console.log("Received audio chunk: " + audioData.data.length + " bytes, end: " + audioData.end);
+});
+
+// Send voice assistant events to indicate processing stages.
 client.sendVoiceAssistantEvent(VoiceAssistantEvent.WAKE_WORD_START);
 client.sendVoiceAssistantEvent(VoiceAssistantEvent.STT_END, [
-  { name: 'text', value: 'Turn on the lights' }
+  { name: "text", value: "Turn on the living room lights" }
 ]);
 
-// Configure wake words
+// Request and configure wake words.
 client.requestVoiceAssistantConfiguration();
-client.on('voiceAssistantConfiguration', (config) => {
-  console.log('Available wake words:', config.availableWakeWords);
-  client.setVoiceAssistantConfiguration(['alexa', 'hey_google']);
+
+client.on("voiceAssistantConfiguration", (config) => {
+  console.log("Available wake words:", config.availableWakeWords);
+  console.log("Active wake words:", config.activeWakeWords);
+  console.log("Max active:", config.maxActiveWakeWords);
+
+  // Set active wake words.
+  client.setVoiceAssistantConfiguration(["alexa", "hey_jarvis"]);
+});
+
+// Handle announcement completion.
+client.on("voiceAssistantAnnounceFinished", (success) => {
+  console.log("Announcement finished, success: " + success);
 });
 ```
 
@@ -357,23 +451,54 @@ This library includes a complete, Node-native implementation of the Noise Protoc
 
 ### Using the Noise Protocol Directly
 ```typescript
-import { createESPHomeHandshake } from 'esphome-client';
+import { Socket } from "net";
+import { createESPHomeHandshake } from "esphome-client";
 
-// Create a handshake for ESPHome communication
+// The createESPHomeHandshake function creates a HandshakeState configured for ESPHome.
+// Options: psk (required Buffer), role (optional, defaults to "initiator"), logger (optional).
 const handshake = createESPHomeHandshake({
-  role: 'initiator',  // Clients are always initiators
-  psk: Buffer.from('your-32-byte-psk', 'base64'),
-  logger: console
+  psk: Buffer.from("your-base64-encoded-psk", "base64")
 });
 
-// Perform the handshake...
-const msg1 = handshake.writeMessage();
-// Send msg1 to device, receive response...
-handshake.readMessage(deviceResponse);
+// Example: Manual handshake over a TCP socket.
+const socket = new Socket();
 
-// After handshake completion, use cipher states for encryption
-const encrypted = handshake.sendCipher.EncryptWithAd(Buffer.alloc(0), plaintext);
-const decrypted = handshake.receiveCipher.DecryptWithAd(Buffer.alloc(0), encrypted);
+socket.connect(6053, "192.168.1.100", () => {
+  // Step 1: Write the first handshake message (client hello with ephemeral key).
+  const clientHello = handshake.writeMessage();
+
+  // Frame it for ESPHome: [0x01][length_high][length_low][payload]
+  const frame = Buffer.alloc(3 + clientHello.length);
+  frame[0] = 0x01;
+  frame[1] = (clientHello.length >> 8) & 0xff;
+  frame[2] = clientHello.length & 0xff;
+  clientHello.copy(frame, 3);
+  socket.write(frame);
+});
+
+socket.on("data", (data) => {
+  if(!handshake.isComplete) {
+    // Step 2: Process the server's handshake response.
+    // Skip the 3-byte frame header to get the payload.
+    const serverResponse = data.subarray(3);
+    handshake.readMessage(serverResponse);
+
+    if(handshake.isComplete) {
+      console.log("Handshake complete. Encryption established.");
+
+      // Now use the cipher states for all subsequent communication.
+      // sendCipher encrypts outgoing messages, receiveCipher decrypts incoming.
+      const plaintext = Buffer.from("Hello ESPHome");
+      const encrypted = handshake.sendCipher.EncryptWithAd(Buffer.alloc(0), plaintext);
+      console.log("Encrypted message length:", encrypted.length);
+    }
+  } else {
+    // Decrypt incoming encrypted messages.
+    const payload = data.subarray(3);
+    const decrypted = handshake.receiveCipher.DecryptWithAd(Buffer.alloc(0), payload);
+    console.log("Decrypted message:", decrypted);
+  }
+});
 ```
 
 ## API Documentation
@@ -383,19 +508,23 @@ Complete API documentation is available through TypeDoc. The library provides co
 ### Key Classes and Interfaces
 
 - `EspHomeClient` - Main client class for device communication
-  - Event-driven architecture with TypeScript-typed events
-  - Automatic reconnection and error recovery
-  - Complete entity discovery and caching
-  - Type-safe command methods for all entity types
+  - Event-driven architecture extending Node.js EventEmitter
+  - Automatic encryption negotiation with plaintext fallback
+  - Complete entity discovery and state caching
+  - Type-safe command methods for all 22 entity types
 
 - `HandshakeState` - Noise protocol handshake implementation
   - Complete Noise_NNpsk0_25519_ChaChaPoly_SHA256 implementation
-  - Cipher state management for encrypted communication
-  - Automatic key derivation and rekeying support
+  - Cipher state management via `sendCipher` and `receiveCipher`
+  - Methods: `writeMessage()`, `readMessage()`, `isComplete` property
+
+- `CipherState` - Encryption/decryption after handshake completion
+  - `EncryptWithAd(ad, plaintext)` - Encrypt with associated data
+  - `DecryptWithAd(ad, ciphertext)` - Decrypt with associated data
 
 - `createESPHomeHandshake` - Factory for ESPHome-specific Noise handshakes
-  - Configures correct prologue for ESPHome compatibility
-  - Simplified API for common use cases
+  - Configures correct prologue (`NoiseAPIInit`) for ESPHome compatibility
+  - Options: `psk` (Buffer), `role` (optional), `logger` (optional)
 
 ### Event Types
 
