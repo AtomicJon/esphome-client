@@ -1,6 +1,12 @@
 #!/usr/bin/env node
 /* eslint-disable no-console */
 
+/**
+ * Command-line interface for interacting with ESPHome devices.
+ *
+ * @module util/espc
+ */
+
 import { type DeviceInfo, EspHomeClient, type EspHomeClientOptions } from "../esphome-client.js";
 import type { EspHomeLogging } from "../types.js";
 import { createInterface } from "node:readline";
@@ -146,7 +152,7 @@ function parseCommandLine(): { command: string | null; commandArgs: string[]; co
 
   const args = process.argv.slice(2);
 
-  if(args.length === 0 || args.includes("--help")) {
+  if((args.length === 0) || args.includes("--help")) {
 
     showUsage();
     process.exit(0);
@@ -188,7 +194,7 @@ function parseCommandLine(): { command: string | null; commandArgs: string[]; co
           // Command option.
           const optName = cmdArg.slice(2);
 
-          if(i + 1 < args.length && !args[i + 1].startsWith("-")) {
+          if((i + 1 < args.length) && !args[i + 1].startsWith("-")) {
 
             commandOptions[optName] = args[i + 1];
             i += 2;
@@ -439,7 +445,7 @@ async function handleList(options: ParsedOptions, commandOptions: CommandOptions
     await new Promise<void>(resolve => setTimeout(resolve, 2000));
 
     const entities = client.getEntitiesWithIds();
-    const typeFilter = commandOptions.type && typeof commandOptions.type === "string" ? commandOptions.type.toLowerCase() : null;
+    const typeFilter = commandOptions.type && (typeof commandOptions.type === "string") ? commandOptions.type.toLowerCase() : null;
 
     console.log("Discovered Entities:");
 
@@ -483,7 +489,7 @@ async function handleMonitor(options: ParsedOptions, commandOptions: CommandOpti
         const entityKey = typeof commandOptions.entity === "string" ? parseInt(commandOptions.entity) : 0;
         const entity = typeof commandOptions.entity === "string" ? client.getEntityById(commandOptions.entity) : null;
 
-        if(entity && entity.key !== entityKey) {
+        if(entity && (entity.key !== entityKey)) {
 
           return;
         }
@@ -567,7 +573,7 @@ async function handleControl(options: ParsedOptions, commandArgs: string[], comm
 
         const state = commandArgs[1]?.toLowerCase();
 
-        if(state !== "on" && state !== "off") {
+        if((state !== "on") && (state !== "off")) {
 
           console.error("Error: Switch requires 'on' or 'off' state.");
           client.disconnect();
@@ -595,29 +601,29 @@ async function handleControl(options: ParsedOptions, commandArgs: string[], comm
         const lightCommand: Record<string, unknown> = {};
 
         // Check for simple on/off in commandArgs.
-        if(commandArgs[1] && (commandArgs[1] === "on" || commandArgs[1] === "off")) {
+        if(commandArgs[1] && ((commandArgs[1] === "on") || (commandArgs[1] === "off"))) {
 
           lightCommand.state = commandArgs[1] === "on";
         }
 
         // Process command options.
-        if(commandOptions.state && typeof commandOptions.state === "string") {
+        if(commandOptions.state && (typeof commandOptions.state === "string")) {
 
           lightCommand.state = commandOptions.state.toLowerCase() === "on";
         }
 
-        if(commandOptions.brightness && typeof commandOptions.brightness === "string") {
+        if(commandOptions.brightness && (typeof commandOptions.brightness === "string")) {
 
           const brightness = parseInt(commandOptions.brightness);
 
           lightCommand.brightness = Math.max(0, Math.min(255, brightness));
         }
 
-        if(commandOptions.rgb && typeof commandOptions.rgb === "string") {
+        if(commandOptions.rgb && (typeof commandOptions.rgb === "string")) {
 
           const parts = commandOptions.rgb.split(",").map((v: string) => parseInt(v.trim()));
 
-          if(parts.length === 3 && parts.every((v: number) => !isNaN(v))) {
+          if((parts.length === 3) && parts.every((v: number) => !isNaN(v))) {
 
             lightCommand.rgb = {
 
@@ -628,12 +634,12 @@ async function handleControl(options: ParsedOptions, commandArgs: string[], comm
           }
         }
 
-        if(commandOptions.temp && typeof commandOptions.temp === "string") {
+        if(commandOptions.temp && (typeof commandOptions.temp === "string")) {
 
           lightCommand.colorTemperature = parseInt(commandOptions.temp);
         }
 
-        if(commandOptions.effect && typeof commandOptions.effect === "string") {
+        if(commandOptions.effect && (typeof commandOptions.effect === "string")) {
 
           lightCommand.effect = commandOptions.effect;
         }
@@ -674,7 +680,7 @@ async function handleControl(options: ParsedOptions, commandArgs: string[], comm
 
         const state = commandArgs[1]?.toLowerCase();
 
-        if(state === "on" || state === "off") {
+        if((state === "on") || (state === "off")) {
 
           console.log(joinParts([ "Turning fan ", entity.name, " ", state.toUpperCase(), "..." ]));
           client.sendFanCommand(entity.id, { state: state === "on" });
@@ -692,7 +698,7 @@ async function handleControl(options: ParsedOptions, commandArgs: string[], comm
 
         const cmd = commandArgs[1]?.toLowerCase();
 
-        if(cmd === "lock" || cmd === "unlock" || cmd === "open") {
+        if((cmd === "lock") || (cmd === "unlock") || (cmd === "open")) {
 
           console.log(joinParts([ "Sending ", cmd, " command to ", entity.name, "..." ]));
           client.sendLockCommand(entity.id, cmd as "lock" | "unlock" | "open");
@@ -961,7 +967,7 @@ async function handleInteractive(options: ParsedOptions): Promise<void> {
 
                 const state = parts[2]?.toLowerCase();
 
-                if(state === "on" || state === "off") {
+                if((state === "on") || (state === "off")) {
 
                   client.sendSwitchCommand(entity.id, state === "on");
                   console.log(joinParts([ "Switched ", entity.name, " ", state.toUpperCase() ]));
@@ -1008,7 +1014,7 @@ async function handleInteractive(options: ParsedOptions): Promise<void> {
 
                 const cmd = parts[2]?.toLowerCase();
 
-                if(cmd === "open" || cmd === "close" || cmd === "stop") {
+                if((cmd === "open") || (cmd === "close") || (cmd === "stop")) {
 
                   if(cmd === "stop") {
 
@@ -1030,7 +1036,7 @@ async function handleInteractive(options: ParsedOptions): Promise<void> {
 
                 const state = parts[2]?.toLowerCase();
 
-                if(state === "on" || state === "off") {
+                if((state === "on") || (state === "off")) {
 
                   client.sendFanCommand(entity.id, { state: state === "on" });
                   console.log(joinParts([ "Fan ", entity.name, " turned ", state.toUpperCase() ]));
@@ -1046,7 +1052,7 @@ async function handleInteractive(options: ParsedOptions): Promise<void> {
 
                 const cmd = parts[2]?.toLowerCase();
 
-                if(cmd === "lock" || cmd === "unlock" || cmd === "open") {
+                if((cmd === "lock") || (cmd === "unlock") || (cmd === "open")) {
 
                   client.sendLockCommand(entity.id, cmd as "lock" | "unlock" | "open");
                   console.log(joinParts([ "Lock command '", cmd, "' sent to ", entity.name ]));

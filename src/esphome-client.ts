@@ -1,4 +1,4 @@
-/* Copyright(C) 2017-2025, HJD (https://github.com/hjdhjd). All rights reserved.
+/* Copyright(C) 2017-2026, HJD (https://github.com/hjdhjd). All rights reserved.
  *
  * esphome-client.ts: ESPHome native API client with Noise encryption support.
  */
@@ -158,8 +158,11 @@
  * });
  * ```
  */
+import { ENTITY_SCHEMAS, findSchemaByListEntitiesMessageType, findSchemaByStateMessageType } from "./schemas/index.js";
+import type { Entity, EntitySchema, EntityType, FieldSpec, HasPatternField, RepeatedFieldSpec, StateSchema } from "./schemas/index.js";
 import type { EspHomeLogging, Nullable } from "./types.js";
 import { type HandshakeState, createESPHomeHandshake } from "./crypto-noise.js";
+import { MessageType, WireType } from "./protocol/index.js";
 import { type Socket, createConnection } from "node:net";
 import { Buffer } from "node:buffer";
 import { EventEmitter } from "node:events";
@@ -442,146 +445,15 @@ export enum VoiceAssistantTimerEvent {
 }
 
 /**
- * We support almost all of the ESPHome API message types. These message types define the protocol communication between the client and the ESPHome device.
- */
-enum MessageType {
-
-  HELLO_REQUEST                                 = 1,
-  HELLO_RESPONSE                                = 2,
-  AUTHENTICATION_REQUEST                        = 3,
-  CONNECT_REQUEST                               = 3,
-  AUTHENTICATION_RESPONSE                       = 4,
-  CONNECT_RESPONSE                              = 4,
-  DISCONNECT_REQUEST                            = 5,
-  DISCONNECT_RESPONSE                           = 6,
-  PING_REQUEST                                  = 7,
-  PING_RESPONSE                                 = 8,
-  DEVICE_INFO_REQUEST                           = 9,
-  DEVICE_INFO_RESPONSE                          = 10,
-  LIST_ENTITIES_REQUEST                         = 11,
-  LIST_ENTITIES_BINARY_SENSOR_RESPONSE          = 12,
-  LIST_ENTITIES_COVER_RESPONSE                  = 13,
-  LIST_ENTITIES_FAN_RESPONSE                    = 14,
-  LIST_ENTITIES_LIGHT_RESPONSE                  = 15,
-  LIST_ENTITIES_SENSOR_RESPONSE                 = 16,
-  LIST_ENTITIES_SWITCH_RESPONSE                 = 17,
-  LIST_ENTITIES_TEXT_SENSOR_RESPONSE            = 18,
-  LIST_ENTITIES_DONE_RESPONSE                   = 19,
-  SUBSCRIBE_STATES_REQUEST                      = 20,
-  BINARY_SENSOR_STATE_RESPONSE                  = 21,
-  COVER_STATE_RESPONSE                          = 22,
-  FAN_STATE_RESPONSE                            = 23,
-  LIGHT_STATE_RESPONSE                          = 24,
-  SENSOR_STATE_RESPONSE                         = 25,
-  SWITCH_STATE_RESPONSE                         = 26,
-  TEXT_SENSOR_STATE_RESPONSE                    = 27,
-  SUBSCRIBE_LOGS_REQUEST                        = 28,
-  SUBSCRIBE_LOGS_RESPONSE                       = 29,
-  COVER_COMMAND_REQUEST                         = 30,
-  FAN_COMMAND_REQUEST                           = 31,
-  LIGHT_COMMAND_REQUEST                         = 32,
-  SWITCH_COMMAND_REQUEST                        = 33,
-  SUBSCRIBE_HOMEASSISTANT_SERVICES_REQUEST      = 34,
-  HOMEASSISTANT_SERVICE_RESPONSE                = 35,
-  GET_TIME_REQUEST                              = 36,
-  GET_TIME_RESPONSE                             = 37,
-  SUBSCRIBE_HOME_ASSISTANT_STATES_REQUEST       = 38,
-  SUBSCRIBE_HOME_ASSISTANT_STATE_RESPONSE       = 39,
-  HOME_ASSISTANT_STATE_RESPONSE                 = 40,
-  LIST_ENTITIES_SERVICES_RESPONSE               = 41,
-  EXECUTE_SERVICE_REQUEST                       = 42,
-  LIST_ENTITIES_CAMERA_RESPONSE                 = 43,
-  CAMERA_IMAGE_RESPONSE                         = 44,
-  CAMERA_IMAGE_REQUEST                          = 45,
-  LIST_ENTITIES_CLIMATE_RESPONSE                = 46,
-  CLIMATE_STATE_RESPONSE                        = 47,
-  CLIMATE_COMMAND_REQUEST                       = 48,
-  LIST_ENTITIES_NUMBER_RESPONSE                 = 49,
-  NUMBER_STATE_RESPONSE                         = 50,
-  NUMBER_COMMAND_REQUEST                        = 51,
-  LIST_ENTITIES_SELECT_RESPONSE                 = 52,
-  SELECT_STATE_RESPONSE                         = 53,
-  SELECT_COMMAND_REQUEST                        = 54,
-  LIST_ENTITIES_SIREN_RESPONSE                  = 55,
-  SIREN_STATE_RESPONSE                          = 56,
-  SIREN_COMMAND_REQUEST                         = 57,
-  LIST_ENTITIES_LOCK_RESPONSE                   = 58,
-  LOCK_STATE_RESPONSE                           = 59,
-  LOCK_COMMAND_REQUEST                          = 60,
-  LIST_ENTITIES_BUTTON_RESPONSE                 = 61,
-  BUTTON_COMMAND_REQUEST                        = 62,
-  LIST_ENTITIES_MEDIA_PLAYER_RESPONSE           = 63,
-  MEDIA_PLAYER_STATE_RESPONSE                   = 64,
-  MEDIA_PLAYER_COMMAND_REQUEST                  = 65,
-  SUBSCRIBE_VOICE_ASSISTANT_REQUEST             = 89,
-  VOICE_ASSISTANT_REQUEST                       = 90,
-  VOICE_ASSISTANT_RESPONSE                      = 91,
-  VOICE_ASSISTANT_EVENT_RESPONSE                = 92,
-  LIST_ENTITIES_ALARM_CONTROL_PANEL_RESPONSE    = 94,
-  ALARM_CONTROL_PANEL_STATE_RESPONSE            = 95,
-  ALARM_CONTROL_PANEL_COMMAND_REQUEST           = 96,
-  LIST_ENTITIES_TEXT_RESPONSE                   = 97,
-  TEXT_STATE_RESPONSE                           = 98,
-  TEXT_COMMAND_REQUEST                          = 99,
-  LIST_ENTITIES_DATE_RESPONSE                   = 100,
-  DATE_STATE_RESPONSE                           = 101,
-  DATE_COMMAND_REQUEST                          = 102,
-  LIST_ENTITIES_TIME_RESPONSE                   = 103,
-  TIME_STATE_RESPONSE                           = 104,
-  TIME_COMMAND_REQUEST                          = 105,
-  VOICE_ASSISTANT_AUDIO                         = 106,
-  LIST_ENTITIES_EVENT_RESPONSE                  = 107,
-  EVENT_RESPONSE                                = 108,
-  LIST_ENTITIES_VALVE_RESPONSE                  = 109,
-  VALVE_STATE_RESPONSE                          = 110,
-  VALVE_COMMAND_REQUEST                         = 111,
-  LIST_ENTITIES_DATETIME_RESPONSE               = 112,
-  DATETIME_STATE_RESPONSE                       = 113,
-  DATETIME_COMMAND_REQUEST                      = 114,
-  VOICE_ASSISTANT_TIMER_EVENT_RESPONSE          = 115,
-  LIST_ENTITIES_UPDATE_RESPONSE                 = 116,
-  UPDATE_STATE_RESPONSE                         = 117,
-  UPDATE_COMMAND_REQUEST                        = 118,
-  VOICE_ASSISTANT_ANNOUNCE_REQUEST              = 119,
-  VOICE_ASSISTANT_ANNOUNCE_FINISHED             = 120,
-  VOICE_ASSISTANT_CONFIGURATION_REQUEST         = 121,
-  VOICE_ASSISTANT_CONFIGURATION_RESPONSE        = 122,
-  VOICE_ASSISTANT_SET_CONFIGURATION             = 123,
-  NOISE_ENCRYPTION_SET_KEY_REQUEST              = 124,
-  NOISE_ENCRYPTION_SET_KEY_RESPONSE             = 125
-}
-
-/**
  * Define the valid types that a decoded ESPHome field value can have. Field values can be either raw bytes in a Buffer or numeric values.
  */
 type FieldValue = Buffer | number;
 
-/**
- * Wire types used in protobuf encoding. These define how data is encoded on the wire in the protocol buffer format.
- */
-enum WireType {
-
-  VARINT = 0,
-  FIXED64 = 1,
-  LENGTH_DELIMITED = 2,
-  FIXED32 = 5
-}
-
-/**
- * Represents one entity from the ESPHome device. An entity is any controllable or observable component on the device.
- *
- * @property key - The numeric key identifier for the entity.
- * @property name - The human-readable display name of the entity.
- * @property objectId - The unique object ID of the entity (used for entity IDs).
- * @property type - The type of entity (e.g., "switch", "light", "cover").
- */
-export interface Entity {
-
-  key: number;
-  name: string;
-  objectId: string;
-  type: string;
-}
+// Re-export entity types and enums from schemas module for public API access.
+export { EntityCategory, NumberMode, StateClass, TextMode } from "./schemas/index.js";
+export type { AlarmControlPanelEntity, BaseEntity, BinarySensorEntity, ButtonEntity, CameraEntity, ClimateEntity, CoverEntity, DateEntity, DateTimeEntity, Entity,
+  EntityType, EventEntity, FanEntity, LightEntity, LockEntity, MediaPlayerEntity, NumberEntity, SelectEntity, SensorEntity, SirenEntity, SwitchEntity, TextEntity,
+  TextSensorEntity, TimeEntity, UpdateEntity, ValveEntity } from "./schemas/index.js";
 
 /**
  * Represents a user-defined service argument definition.
@@ -1089,7 +961,7 @@ export interface ClientEventsMap {
   datetime: DateTimeEvent;
   deviceInfo: DeviceInfo;
   disconnect: string | undefined;
-  entities: Record<string, unknown>;
+  entities: Entity[];
   event: EventEntityEvent;
   fan: FanEvent;
   heartbeat: { uptime?: number };
@@ -1414,7 +1286,7 @@ export class EspHomeClient extends EventEmitter {
   private entityDeviceIds: Map<number, number>;
 
   // Map from entity keys to their type labels.
-  private entityTypes: Map<number, string>;
+  private entityTypes: Map<number, EntityType>;
 
   // Array storing all discovered user-defined services from the device.
   private discoveredServices: ServiceEntity[];
@@ -1508,7 +1380,7 @@ export class EspHomeClient extends EventEmitter {
     this.entityNames = new Map<number, string>();
     this.entityObjectIds = new Map<number, string>();
     this.entityDeviceIds = new Map<number, number>();
-    this.entityTypes = new Map<number, string>();
+    this.entityTypes = new Map<number, EntityType>();
     this.services = new Map<number, ServiceEntity>();
     this.voiceAssistantSubscribed = false;
     this.voiceAssistantConfig = null;
@@ -1671,6 +1543,29 @@ export class EspHomeClient extends EventEmitter {
   }
 
   /**
+   * Fall back to plaintext connection after an encrypted connection attempt fails. This resets connection state, cleans up encryption resources, and initiates a new
+   * plaintext connection attempt. Called when Noise handshake times out, socket closes during encryption, or handshake fails with an error.
+   *
+   * @param destroySocket - Whether to destroy the existing socket. Set to false when the socket is already closed (e.g., in the socket close handler).
+   */
+  private fallbackToPlaintext(destroySocket: boolean): void {
+
+    this.cleanupDataListener();
+    this.cleanupNoiseResources();
+
+    if(destroySocket && this.clientSocket) {
+
+      this.clientSocket.destroy();
+      this.clientSocket = null;
+    }
+
+    this.recvBuffer = Buffer.alloc(0);
+    this.connectionState = ConnectionState.TRYING_PLAINTEXT;
+    this.usingEncryption = false;
+    this.createConnection();
+  }
+
+  /**
    * Set a connection timer for timeout detection. This helps detect when a connection attempt has stalled.
    *
    * @param timeout - Timeout duration in milliseconds (default: 5000).
@@ -1695,24 +1590,7 @@ export class EspHomeClient extends EventEmitter {
 
         // Noise encryption handshake timed out. This could mean the device doesn't support encryption, so we try plaintext as a fallback.
         this.log.debug("Noise encryption handshake timed out. The device may not support encryption. Trying plaintext connection.");
-
-        // Close the current connection and try again with plaintext.
-        this.cleanupDataListener();
-        this.cleanupNoiseResources();
-
-        if(this.clientSocket) {
-
-          this.clientSocket.destroy();
-          this.clientSocket = null;
-        }
-
-        // Reset the buffer and set state for plaintext connection.
-        this.recvBuffer = Buffer.alloc(0);
-        this.connectionState = ConnectionState.TRYING_PLAINTEXT;
-        this.usingEncryption = false;
-
-        // Create a new connection for plaintext protocol.
-        this.createConnection();
+        this.fallbackToPlaintext(true);
 
         break;
 
@@ -1967,16 +1845,7 @@ export class EspHomeClient extends EventEmitter {
 
       // We were trying encryption and the socket closed. This might mean the device doesn't support encryption, so let's try plaintext.
       this.log.debug("Socket closed during encryption attempt. The device may not support encryption. Trying plaintext connection.");
-
-      // Clean up and try again with plaintext.
-      this.cleanupDataListener();
-      this.cleanupNoiseResources();
-      this.recvBuffer = Buffer.alloc(0);
-      this.connectionState = ConnectionState.TRYING_PLAINTEXT;
-      this.usingEncryption = false;
-
-      // Create a new connection for plaintext protocol.
-      this.createConnection();
+      this.fallbackToPlaintext(false);
 
       return;
     }
@@ -2133,20 +2002,7 @@ export class EspHomeClient extends EventEmitter {
       if(noiseFailed) {
 
         this.log.debug("Noise handshake failed. Attempting to fall back to plaintext connection.");
-
-        this.cleanupDataListener();
-        this.cleanupNoiseResources();
-
-        if(this.clientSocket) {
-
-          this.clientSocket.destroy();
-          this.clientSocket = null;
-        }
-
-        this.recvBuffer = Buffer.alloc(0);
-        this.connectionState = ConnectionState.TRYING_PLAINTEXT;
-        this.usingEncryption = false;
-        this.createConnection();
+        this.fallbackToPlaintext(true);
 
         return;
       }
@@ -3330,53 +3186,14 @@ export class EspHomeClient extends EventEmitter {
   }
 
   /**
-   * Extract entity type label from message type. This converts the message type enum to a lowercase string identifier.
+   * Extract entity type label from message type. This converts the message type enum to a lowercase string identifier matching the EntityType union.
    *
    * @param type - The message type enum value.
-   * @returns The entity type label string.
+   * @returns The entity type label.
    */
-  private getEntityTypeLabel(type: MessageType): string {
+  private getEntityTypeLabel(type: MessageType): EntityType {
 
-    return MessageType[type].replace(/^LIST_ENTITIES_/, "").replace(/_RESPONSE$/, "").replace(/_STATE$/, "").toLowerCase();
-  }
-
-  /**
-   * Get the device_id field number for a given entity list response type. Different entity types have device_id at different field positions.
-   *
-   * @param type - The message type enum value.
-   * @returns The field number for device_id, or undefined if not supported.
-   */
-  private getDeviceIdFieldNumber(type: MessageType): number | undefined {
-
-    // Map of message types to their device_id field numbers.
-    const deviceIdFields: Record<number, number> = {
-
-      [MessageType.LIST_ENTITIES_ALARM_CONTROL_PANEL_RESPONSE]: 11,
-      [MessageType.LIST_ENTITIES_BINARY_SENSOR_RESPONSE]: 10,
-      [MessageType.LIST_ENTITIES_BUTTON_RESPONSE]: 9,
-      [MessageType.LIST_ENTITIES_CAMERA_RESPONSE]: 8,
-      [MessageType.LIST_ENTITIES_CLIMATE_RESPONSE]: 26,
-      [MessageType.LIST_ENTITIES_COVER_RESPONSE]: 13,
-      [MessageType.LIST_ENTITIES_DATE_RESPONSE]: 8,
-      [MessageType.LIST_ENTITIES_DATETIME_RESPONSE]: 8,
-      [MessageType.LIST_ENTITIES_EVENT_RESPONSE]: 10,
-      [MessageType.LIST_ENTITIES_FAN_RESPONSE]: 13,
-      [MessageType.LIST_ENTITIES_LIGHT_RESPONSE]: 16,
-      [MessageType.LIST_ENTITIES_LOCK_RESPONSE]: 12,
-      [MessageType.LIST_ENTITIES_MEDIA_PLAYER_RESPONSE]: 10,
-      [MessageType.LIST_ENTITIES_NUMBER_RESPONSE]: 14,
-      [MessageType.LIST_ENTITIES_SELECT_RESPONSE]: 9,
-      [MessageType.LIST_ENTITIES_SENSOR_RESPONSE]: 14,
-      [MessageType.LIST_ENTITIES_SIREN_RESPONSE]: 11,
-      [MessageType.LIST_ENTITIES_SWITCH_RESPONSE]: 10,
-      [MessageType.LIST_ENTITIES_TEXT_RESPONSE]: 12,
-      [MessageType.LIST_ENTITIES_TEXT_SENSOR_RESPONSE]: 9,
-      [MessageType.LIST_ENTITIES_TIME_RESPONSE]: 8,
-      [MessageType.LIST_ENTITIES_UPDATE_RESPONSE]: 9,
-      [MessageType.LIST_ENTITIES_VALVE_RESPONSE]: 12
-    };
-
-    return deviceIdFields[type];
+    return MessageType[type].replace(/^LIST_ENTITIES_/, "").replace(/_RESPONSE$/, "").replace(/_STATE$/, "").toLowerCase() as EntityType;
   }
 
   /**
@@ -3433,68 +3250,51 @@ export class EspHomeClient extends EventEmitter {
       return;
     }
 
+    // Look up the entity schema by message type.
+    const schema = findSchemaByListEntitiesMessageType(type);
+
+    if(!schema) {
+
+      this.log.warn("Unknown list entities message type: " + type);
+
+      return;
+    }
+
     // Decode the protobuf fields from the payload.
     const fields = this.decodeProtobuf(payload);
 
-    // Extract and validate the object_id (field 1) - this is the unique identifier.
-    const objectId = this.extractStringField(fields, 1);
-
-    if(objectId === undefined) {
-
-      return;
-    }
-
-    // Extract and validate the entity key (field 2).
-    const key = this.extractFixed32Field(fields, 2);
-
-    if(key === undefined) {
-
-      return;
-    }
-
-    // Extract and validate the entity name (field 3) - this is the display name.
-    const name = this.extractStringField(fields, 3);
-
-    if(name === undefined) {
-
-      return;
-    }
-
     // Determine the entity type label from the message type enum.
-    const label = this.getEntityTypeLabel(type);
+    const entityType = this.getEntityTypeLabel(type);
 
-    // Extract device_id if present for this entity type.
-    const deviceIdFieldNum = this.getDeviceIdFieldNumber(type);
-    let deviceId: number | undefined;
+    // Use schema-driven parsing to extract all entity fields.
+    const entity = this.decodeEntityFromSchema(fields, schema, entityType);
 
-    if(deviceIdFieldNum !== undefined) {
+    if(!entity) {
 
-      deviceId = this.extractNumberField(fields, deviceIdFieldNum);
+      return;
     }
 
     // Store the entity information in our lookup maps.
     // Use object_id instead of name to create the entity ID to avoid collisions.
-    const entityId = (label + "-" + objectId).toLowerCase();
+    const entityId = (entityType + "-" + entity.objectId).toLowerCase();
 
-    this.entityKeys.set(entityId, key);
-    this.entityNames.set(key, name);
-    this.entityObjectIds.set(key, objectId);
-    this.entityTypes.set(key, label);
+    this.entityKeys.set(entityId, entity.key);
+    this.entityNames.set(entity.key, entity.name);
+    this.entityObjectIds.set(entity.key, entity.objectId);
+    this.entityTypes.set(entity.key, entityType);
 
     // Store device_id if present.
-    if(deviceId !== undefined) {
+    if(entity.deviceId !== undefined) {
 
-      this.entityDeviceIds.set(key, deviceId);
+      this.entityDeviceIds.set(entity.key, entity.deviceId);
     }
 
-    // Create an entity object and add it to our discovered entities list.
-    const ent: Entity = { key, name, objectId, type: label };
-
-    this.discoveredEntities.push(ent);
+    // Add the fully populated entity to our discovered entities list.
+    this.discoveredEntities.push(entity);
 
     // Log the entity registration for debugging.
-    this.log.debug("Registered entity: [" + key + "] " + objectId + " (" + name + ") | type: " + label +
-                  (deviceId !== undefined ? " | device: " + deviceId : ""));
+    this.log.debug("Registered entity: [" + entity.key + "] " + entity.objectId + " (" + entity.name + ") | type: " + entityType +
+                  (entity.deviceId !== undefined ? " | device: " + entity.deviceId : ""));
   }
 
   /**
@@ -3609,405 +3409,33 @@ export class EspHomeClient extends EventEmitter {
 
     // Handle different entity types with their specific state structures.
     let data: TelemetryEvent;
-    let deviceId, missing, state;
 
-    switch(type) {
+    // Handle special cases that don't follow the standard schema pattern.
+    if(type === MessageType.BUTTON_COMMAND_REQUEST) {
 
-      case MessageType.ALARM_CONTROL_PANEL_STATE_RESPONSE:
+      // Button is a special case - it's not a state response but a convenience notification.
+      data = {
 
-        state = this.extractNumberField(fields, 2);
-        deviceId = this.extractNumberField(fields, 3);
+        entity: name,
+        key,
+        pressed: true,
+        type: "button"
+      };
 
-        data = {
+    } else {
 
-          deviceId,
-          entity: name,
-          key,
-          state,
-          type: "alarm_control_panel"
-        };
+      // Try schema-driven decoding for standard state responses.
+      const schema = findSchemaByStateMessageType(type);
 
-        break;
+      if(schema) {
 
-      case MessageType.BINARY_SENSOR_STATE_RESPONSE:
+        // Use unified schema-driven decoding for all entity types with defined schemas.
+        data = this.decodeStateFromSchema(fields, schema.state, name, key, schema.type);
 
-        state = this.extractNumberField(fields, 2);
-        missing = this.extractNumberField(fields, 3);
-        deviceId = this.extractNumberField(fields, 4);
+      } else {
 
-        data = {
-
-          deviceId,
-          entity: name,
-          key,
-          missingState: (typeof missing === "number") ? (missing === 1) : undefined,
-          state: (typeof state === "number") ? (state === 1) : undefined,
-          type: "binary_sensor"
-        };
-
-        break;
-
-      case MessageType.BUTTON_COMMAND_REQUEST:
-
-        // We emit a convenience notification to reflect that a button interaction occurred.
-        data = {
-
-          entity: name,
-          key,
-          pressed: true,
-          type: "button"
-        };
-
-        break;
-
-      case MessageType.COVER_STATE_RESPONSE:
-
-        data = { ...this.decodeCoverState(fields, eventType, name), key, type: "cover" } as CoverEvent;
-
-        break;
-
-      case MessageType.FAN_STATE_RESPONSE: {
-
-        state = this.extractNumberField(fields, 2);
-
-        const oscillating = this.extractNumberField(fields, 3);
-        const direction = this.extractNumberField(fields, 5);
-        const speedLevel = this.extractNumberField(fields, 6);
-        const presetMode = this.extractStringField(fields, 7);
-
-        deviceId = this.extractNumberField(fields, 8);
-
-        data = {
-
-          deviceId,
-          direction,
-          entity: name,
-          key,
-          oscillating: (typeof oscillating === "number") ? (oscillating === 1) : undefined,
-          presetMode,
-          speedLevel,
-          state: (typeof state === "number") ? (state === 1) : undefined,
-          type: "fan"
-        };
-
-        break;
-      }
-
-      case MessageType.CLIMATE_STATE_RESPONSE:
-
-        data = { ...this.decodeClimateState(fields, eventType, name), key, type: "climate" } as ClimateEvent;
-
-        break;
-
-      case MessageType.DATE_STATE_RESPONSE: {
-
-        // Extract date components according to DateStateResponse specification.
-        // field 1: key (already extracted)
-        // field 2: missing_state (bool)
-        // field 3: year (uint32)
-        // field 4: month (uint32)
-        // field 5: day (uint32)
-        // field 6: device_id (uint32)
-        missing = this.extractNumberField(fields, 2);
-
-        const year = this.extractNumberField(fields, 3);
-        const month = this.extractNumberField(fields, 4);
-        const day = this.extractNumberField(fields, 5);
-
-        deviceId = this.extractNumberField(fields, 6);
-
-        data = {
-
-          day,
-          deviceId,
-          entity: name,
-          key,
-          missingState: (typeof missing === "number") ? (missing === 1) : undefined,
-          month,
-          type: "date",
-          year
-        };
-
-        break;
-      }
-
-      case MessageType.DATETIME_STATE_RESPONSE: {
-
-        // Extract datetime components according to DateTimeStateResponse specification.
-        // field 1: key (already extracted)
-        // field 2: missing_state (bool)
-        // field 3: epoch_seconds (fixed32)
-        // field 4: device_id (uint32)
-        missing = this.extractNumberField(fields, 2);
-
-        // Extract epoch_seconds as fixed32 (4-byte unsigned integer).
-        const epochSeconds = this.extractFixed32Field(fields, 3);
-
-        deviceId = this.extractNumberField(fields, 4);
-
-        data = {
-
-          deviceId,
-          entity: name,
-          epochSeconds,
-          key,
-          missingState: (typeof missing === "number") ? (missing === 1) : undefined,
-          type: "datetime"
-        };
-
-        break;
-      }
-
-      case MessageType.LIGHT_STATE_RESPONSE:
-
-        data = { ...this.decodeLightState(fields, eventType, name), key, type: "light" } as LightEvent;
-
-        break;
-
-      case MessageType.LOCK_STATE_RESPONSE:
-
-        state = this.extractNumberField(fields, 2);
-        deviceId = this.extractNumberField(fields, 3);
-
-        data = {
-
-          deviceId,
-          entity: name,
-          key,
-          state,
-          type: "lock"
-        };
-
-        break;
-
-      case MessageType.MEDIA_PLAYER_STATE_RESPONSE: {
-
-        state = this.extractNumberField(fields, 2);
-
-        const volume = this.extractTelemetryValue(fields, 3);
-        const muted = this.extractNumberField(fields, 4);
-
-        deviceId = this.extractNumberField(fields, 5);
-
-        data = {
-
-          deviceId,
-          entity: name,
-          key,
-          muted: (typeof muted === "number") ? (muted === 1) : undefined,
-          state,
-          type: "media_player",
-          volume: (typeof volume === "number") ? volume : undefined
-        };
-
-        break;
-      }
-
-      case MessageType.NUMBER_STATE_RESPONSE:
-
-        state = this.extractTelemetryValue(fields, 2);
-        missing = this.extractNumberField(fields, 3);
-        deviceId = this.extractNumberField(fields, 4);
-
-        data = {
-
-          deviceId,
-          entity: name,
-          key,
-          missingState: (typeof missing === "number") ? (missing === 1) : undefined,
-          state: (typeof state === "number") ? state : undefined,
-          type: "number"
-        };
-
-        break;
-
-      case MessageType.SELECT_STATE_RESPONSE:
-
-        state = this.extractStringField(fields, 2);
-        missing = this.extractNumberField(fields, 3);
-        deviceId = this.extractNumberField(fields, 4);
-
-        data = {
-
-          deviceId,
-          entity: name,
-          key,
-          missingState: (typeof missing === "number") ? (missing === 1) : undefined,
-          state,
-          type: "select"
-        };
-
-        break;
-
-      case MessageType.SENSOR_STATE_RESPONSE:
-
-        state = this.extractTelemetryValue(fields, 2);
-        missing = this.extractNumberField(fields, 3);
-        deviceId = this.extractNumberField(fields, 4);
-
-        data = {
-
-          deviceId,
-          entity: name,
-          key,
-          missingState: (typeof missing === "number") ? (missing === 1) : undefined,
-          state: (typeof state === "number") ? state : undefined,
-          type: "sensor"
-        };
-
-        break;
-
-      case MessageType.SIREN_STATE_RESPONSE:
-
-        state = this.extractNumberField(fields, 2);
-        deviceId = this.extractNumberField(fields, 3);
-
-        data = {
-
-          deviceId,
-          entity: name,
-          key,
-          state: (typeof state === "number") ? (state === 1) : undefined,
-          type: "siren"
-        };
-
-        break;
-
-      case MessageType.SWITCH_STATE_RESPONSE:
-
-        state = this.extractNumberField(fields, 2);
-        deviceId = this.extractNumberField(fields, 3);
-
-        data = {
-
-          deviceId,
-          entity: name,
-          key,
-          state: (typeof state === "number") ? (state === 1) : undefined,
-          type: "switch"
-        };
-
-        break;
-
-      case MessageType.TEXT_SENSOR_STATE_RESPONSE:
-
-        state = this.extractStringField(fields, 2);
-        missing = this.extractNumberField(fields, 3);
-        deviceId = this.extractNumberField(fields, 4);
-
-        data = {
-
-          deviceId,
-          entity: name,
-          key,
-          missingState: (typeof missing === "number") ? (missing === 1) : undefined,
-          state,
-          type: "text_sensor"
-        };
-
-        break;
-
-      case MessageType.TEXT_STATE_RESPONSE:
-
-        state = this.extractStringField(fields, 2);
-        missing = this.extractNumberField(fields, 3);
-        deviceId = this.extractNumberField(fields, 4);
-
-        data = {
-
-          deviceId,
-          entity: name,
-          key,
-          missingState: typeof missing === "number" ? missing === 1 : undefined,
-          state,
-          type: "text"
-        };
-
-        break;
-
-      case MessageType.TIME_STATE_RESPONSE: {
-
-        // Extract time components according to TimeStateResponse specification.
-        // field 1: key (already extracted)
-        // field 2: missing_state (bool)
-        // field 3: hour (uint32)
-        // field 4: minute (uint32)
-        // field 5: second (uint32)
-        // field 6: device_id (uint32)
-        missing = this.extractNumberField(fields, 2);
-
-        const hour = this.extractNumberField(fields, 3);
-        const minute = this.extractNumberField(fields, 4);
-        const second = this.extractNumberField(fields, 5);
-
-        deviceId = this.extractNumberField(fields, 6);
-
-        data = {
-
-          deviceId,
-          entity: name,
-          hour,
-          key,
-          minute,
-          missingState: (typeof missing === "number") ? (missing === 1) : undefined,
-          second,
-          type: "time"
-        };
-
-        break;
-      }
-
-      case MessageType.UPDATE_STATE_RESPONSE: {
-
-        missing = this.extractNumberField(fields, 2);
-
-        const inProgress = this.extractNumberField(fields, 3);
-        const hasProgress = this.extractNumberField(fields, 4);
-        const progress = this.extractTelemetryValue(fields, 5);
-        const currentVersion = this.extractStringField(fields, 6);
-        const latestVersion = this.extractStringField(fields, 7);
-        const title = this.extractStringField(fields, 8);
-        const releaseSummary = this.extractStringField(fields, 9);
-        const releaseUrl = this.extractStringField(fields, 10);
-
-        deviceId = this.extractNumberField(fields, 11);
-
-        data = {
-
-          currentVersion,
-          deviceId,
-          entity: name,
-          hasProgress: (typeof hasProgress === "number") ? (hasProgress === 1) : undefined,
-          inProgress: (typeof inProgress === "number") ? (inProgress === 1) : undefined,
-          key,
-          latestVersion,
-          missingState: (typeof missing === "number") ? (missing === 1) : undefined,
-          progress: (typeof progress === "number") ? progress : undefined,
-          releaseSummary,
-          releaseUrl,
-          title,
-          type: "update"
-        };
-
-        break;
-      }
-
-      case MessageType.VALVE_STATE_RESPONSE:
-
-        data = { ...this.decodeValveState(fields, eventType, name), key, type: "valve" } as ValveEvent;
-
-        break;
-
-      case MessageType.EVENT_RESPONSE:
-
-        data = { ...this.decodeEventResponse(fields, eventType, name), key, type: "event" } as EventEntityEvent;
-
-        break;
-
-      default:
-
-        // We fall back to a best-effort payload that preserves the discriminant and any obvious value at field 2.
-        state = this.extractTelemetryValue(fields, 2);
+        // Fall back to a best-effort payload for unknown message types.
+        const state = this.extractTelemetryValue(fields, 2);
 
         data = {
 
@@ -4016,8 +3444,7 @@ export class EspHomeClient extends EventEmitter {
           type: eventType,
           ...((typeof state !== "undefined") ? { value: state } : {})
         } as TelemetryEvent;
-
-        break;
+      }
     }
 
     // We emit a strongly-typed union on the generic telemetry channel. This is the most flexible subscription path.
@@ -4031,137 +3458,245 @@ export class EspHomeClient extends EventEmitter {
   }
 
   /**
-   * Decode cover state telemetry. Cover entities have complex state with position, tilt, and operation status.
+   * Decode state response using schema-driven field extraction. This unified method extracts all fields defined in the schema and converts them to the appropriate
+   * types based on the schema's valueType specifications.
    *
    * @param fields - The decoded protobuf fields.
-   * @param eventType - The event type string.
+   * @param stateSchema - The state schema containing field definitions.
    * @param name - The entity name.
+   * @param key - The entity key.
+   * @param entityType - The entity type string.
+   * @returns A telemetry data object with all extracted fields.
    */
-  private decodeCoverState(fields: Record<number, FieldValue[]>, eventType: string, name: string): CoverTelemetryData {
+  private decodeStateFromSchema(fields: Record<number, FieldValue[]>, stateSchema: StateSchema, name: string, key: number, entityType: string): TelemetryEvent {
 
-    // Extract modern cover state fields only - we don't want to support deprecated legacy fields.
-    return {
+    // Build the base telemetry data object with common fields.
+    const data: Record<string, unknown> = {
 
-      currentOperation: this.extractNumberField(fields, 5),
-      deviceId: this.extractNumberField(fields, 6),
       entity: name,
-      position: this.extractTelemetryValue(fields, 3) as number,
-      tilt: this.extractTelemetryValue(fields, 4) as number,
-      type: eventType
+      key,
+      type: entityType
     };
+
+    // Extract device_id if the schema defines it.
+    if(stateSchema.deviceIdFieldNumber > 0) {
+
+      const deviceId = this.extractNumberField(fields, stateSchema.deviceIdFieldNumber);
+
+      if(deviceId !== undefined) {
+
+        data.deviceId = deviceId;
+      }
+    }
+
+    // Extract each field defined in the schema.
+    for(const [ fieldName, fieldSpec ] of Object.entries(stateSchema.fields)) {
+
+      const rawValue = this.extractFieldBySpec(fields, fieldSpec);
+
+      // Skip undefined values.
+      if(rawValue === undefined) {
+
+        continue;
+      }
+
+      // Convert value based on the field's valueType.
+      switch(fieldSpec.valueType) {
+
+        case "bool":
+
+          // Bool values are encoded as 0/1 integers in protobuf.
+          data[fieldName] = (typeof rawValue === "number") ? (rawValue === 1) : undefined;
+
+          break;
+
+        case "enum":
+        case "varint":
+        case "sint32":
+        case "fixed32":
+
+          // Numeric values are stored directly.
+          data[fieldName] = rawValue;
+
+          break;
+
+        case "float":
+
+          // Float values may come as number from extractTelemetryValue.
+          data[fieldName] = (typeof rawValue === "number") ? rawValue : undefined;
+
+          break;
+
+        case "string":
+
+          // String values are stored directly.
+          data[fieldName] = rawValue;
+
+          break;
+
+        default:
+
+          // Unknown types are stored as-is.
+          data[fieldName] = rawValue;
+      }
+    }
+
+    return data as unknown as TelemetryEvent;
   }
 
   /**
-   * Decode climate state telemetry. Climate entities have the most complex state with multiple temperature values, operating modes, fan settings, and more.
+   * Extract a field value based on its schema specification. This method selects the appropriate extraction method based on the field's wireType and valueType.
    *
    * @param fields - The decoded protobuf fields.
-   * @param eventType - The event type string.
-   * @param name - The entity name.
+   * @param fieldSpec - The field specification from the schema.
+   * @returns The extracted value or undefined if not found.
    */
-  private decodeClimateState(fields: Record<number, FieldValue[]>, eventType: string, name: string): ClimateTelemetryData {
+  private extractFieldBySpec(fields: Record<number, FieldValue[]>, fieldSpec: FieldSpec): number | string | undefined {
 
-    // Extract all the climate-specific fields and build a comprehensive climate state object. Climate entities have many optional fields to represent
-    // the full state of an HVAC system including temperatures, modes, fan settings, swing settings, presets, and humidity control.
-    return {
+    // Use appropriate extraction method based on valueType.
+    switch(fieldSpec.valueType) {
 
-      action: this.extractNumberField(fields, 8),
-      awayConfig: this.extractNumberField(fields, 7) === 1,
-      currentHumidity: this.extractTelemetryValue(fields, 14),
-      currentTemperature: this.extractTelemetryValue(fields, 3),
-      customFanMode: this.extractStringField(fields, 11),
-      customPreset: this.extractStringField(fields, 13),
-      entity: name,
-      fanMode: this.extractNumberField(fields, 9),
-      mode: this.extractNumberField(fields, 2),
-      preset: this.extractNumberField(fields, 12),
-      swingMode: this.extractNumberField(fields, 10),
-      targetHumidity: this.extractTelemetryValue(fields, 15),
-      targetTemperature: this.extractTelemetryValue(fields, 4),
-      targetTemperatureHigh: this.extractTelemetryValue(fields, 6),
-      targetTemperatureLow: this.extractTelemetryValue(fields, 5),
-      type: eventType
-    };
+      case "float":
+
+        // Float values need special extraction using extractTelemetryValue.
+        return this.extractTelemetryValue(fields, fieldSpec.fieldNumber);
+
+      case "string":
+
+        // String values are extracted as UTF-8.
+        return this.extractStringField(fields, fieldSpec.fieldNumber);
+
+      case "bool":
+      case "enum":
+      case "varint":
+      case "sint32":
+
+        // Numeric values are extracted directly.
+        return this.extractNumberField(fields, fieldSpec.fieldNumber);
+
+      case "fixed32":
+
+        // Fixed32 values need special extraction.
+        return this.extractFixed32Field(fields, fieldSpec.fieldNumber);
+
+      default:
+
+        // Fall back to number extraction for unknown types.
+        return this.extractNumberField(fields, fieldSpec.fieldNumber);
+    }
   }
 
   /**
-   * Decode light state telemetry. Light entities have complex state with brightness, colors, color temperature, and effects.
+   * Extract repeated field values from protobuf fields. Repeated fields can appear multiple times with the same field number.
    *
    * @param fields - The decoded protobuf fields.
-   * @param eventType - The event type string.
-   * @param name - The entity name.
+   * @param fieldSpec - The repeated field specification from the schema.
+   * @returns Array of extracted values (strings or numbers), or undefined if no values found.
    */
-  private decodeLightState(fields: Record<number, FieldValue[]>, eventType: string, name: string): LightTelemetryData {
+  private extractRepeatedField(fields: Record<number, FieldValue[]>, fieldSpec: RepeatedFieldSpec): (number | string)[] | undefined {
 
-    // Extract all the light-specific fields and build a comprehensive light state object.
-    // According to LightStateResponse specification, device_id is at field 14.
-    return {
+    const values = fields[fieldSpec.fieldNumber];
 
-      blue: this.extractTelemetryValue(fields, 6) as number,
-      brightness: this.extractTelemetryValue(fields, 3) as number,
-      coldWhite: this.extractTelemetryValue(fields, 12) as number,
-      colorBrightness: this.extractTelemetryValue(fields, 10) as number,
-      colorMode: this.extractNumberField(fields, 11),
-      colorTemperature: this.extractTelemetryValue(fields, 8) as number,
-      deviceId: this.extractNumberField(fields, 14),
-      effect: this.extractStringField(fields, 9),
-      entity: name,
-      green: this.extractTelemetryValue(fields, 5) as number,
-      red: this.extractTelemetryValue(fields, 4) as number,
-      state: this.extractNumberField(fields, 2) === 1,
-      type: eventType,
-      warmWhite: this.extractTelemetryValue(fields, 13) as number,
-      white: this.extractTelemetryValue(fields, 7) as number
-    };
+    // At runtime, accessing a non-existent field number returns undefined despite the type system saying otherwise.
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    if(!values || (values.length === 0)) {
+
+      return undefined;
+    }
+
+    const results: (number | string)[] = [];
+
+    for(const value of values) {
+
+      if(fieldSpec.valueType === "string") {
+
+        // String values are stored as Buffers.
+        if(Buffer.isBuffer(value)) {
+
+          results.push(value.toString("utf8"));
+        }
+      } else {
+
+        // Enum and varint values are stored as numbers.
+        if(typeof value === "number") {
+
+          results.push(value);
+        }
+      }
+    }
+
+    return results.length > 0 ? results : undefined;
   }
 
   /**
-   * Decode valve state telemetry. Valve entities have position and operation status.
+   * Decode an entity from protobuf fields using the schema-driven approach. This extracts all fields defined in the schema and returns a typed Entity object.
    *
    * @param fields - The decoded protobuf fields.
-   * @param eventType - The event type string.
-   * @param name - The entity name.
+   * @param schema - The entity schema containing field definitions.
+   * @param entityType - The entity type label (e.g., "sensor", "light").
+   * @returns The decoded Entity object, or undefined if required fields are missing.
    */
-  private decodeValveState(fields: Record<number, FieldValue[]>, eventType: string, name: string): ValveTelemetryData {
+  private decodeEntityFromSchema(fields: Record<number, FieldValue[]>, schema: EntitySchema, entityType: EntityType): Entity | undefined {
 
-    // Extract valve-specific fields according to ValveStateResponse specification.
-    // field 1: key (already extracted)
-    // field 2: position (float)
-    // field 3: current_operation (ValveOperation enum)
-    // field 4: device_id (optional)
-    return {
+    const listSchema = schema.listEntities;
 
-      currentOperation: this.extractNumberField(fields, 3),
-      deviceId: this.extractNumberField(fields, 4),
-      entity: name,
-      position: this.extractTelemetryValue(fields, 2),
-      type: eventType
+    // Extract required base fields using standardized field numbers.
+    const objectId = this.extractStringField(fields, listSchema.objectIdFieldNumber);
+    const key = this.extractFixed32Field(fields, listSchema.keyFieldNumber);
+    const name = this.extractStringField(fields, listSchema.nameFieldNumber);
+
+    if((objectId === undefined) || (key === undefined) || (name === undefined)) {
+
+      const missing = [ objectId === undefined ? "objectId" : null, key === undefined ? "key" : null, name === undefined ? "name" : null ].filter(Boolean).join(", ");
+
+      this.log.warn("Received " + entityType + " entity missing required field(s): " + missing + ".");
+
+      return undefined;
+    }
+
+    // Build the entity object with base fields.
+    const entity: Record<string, unknown> = {
+
+      key,
+      name,
+      objectId,
+      type: entityType
     };
-  }
 
-  /**
-   * Decode event response telemetry. Event entities represent discrete occurrences with an event type.
-   *
-   * @param fields - The decoded protobuf fields.
-   * @param eventType - The event type string.
-   * @param name - The entity name.
-   */
-  private decodeEventResponse(fields: Record<number, FieldValue[]>, eventType: string, name: string): EventTelemetryData {
+    // Extract device_id for this entity type.
+    const deviceId = this.extractNumberField(fields, listSchema.deviceIdFieldNumber);
 
-    // Extract event fields according to EventResponse specification.
-    // field 1: key (already extracted)
-    // field 2: event_type (string)
-    // field 3: device_id (uint32)
-    const eventTypeValue = this.extractStringField(fields, 2);
-    const deviceId = this.extractNumberField(fields, 3);
+    if(deviceId !== undefined) {
 
-    // Build the event telemetry data object.
-    return {
+      entity.deviceId = deviceId;
+    }
 
-      deviceId,
-      entity: name,
-      eventType: eventTypeValue,
-      type: eventType
-    };
+    // Extract all scalar fields defined in the schema.
+    for(const [ fieldName, fieldSpec ] of Object.entries(listSchema.fields) as [ string, FieldSpec ][]) {
+
+      const value = this.extractFieldBySpec(fields, fieldSpec);
+
+      if(value !== undefined) {
+
+        entity[fieldName] = value;
+      }
+    }
+
+    // Extract all repeated fields defined in the schema.
+    if(listSchema.repeatedFields) {
+
+      for(const [ fieldName, fieldSpec ] of Object.entries(listSchema.repeatedFields) as [ string, RepeatedFieldSpec ][]) {
+
+        const values = this.extractRepeatedField(fields, fieldSpec);
+
+        if(values !== undefined) {
+
+          entity[fieldName] = values;
+        }
+      }
+    }
+
+    return entity as unknown as Entity;
   }
 
   /**
@@ -4432,6 +3967,195 @@ export class EspHomeClient extends EventEmitter {
   }
 
   /**
+   * Encode a single field value based on its schema specification. This handles the wire type encoding for different value types.
+   *
+   * @param value - The value to encode.
+   * @param spec - The field specification from the schema.
+   * @returns The encoded value suitable for a ProtoField.
+   */
+  private encodeFieldValue(value: unknown, spec: FieldSpec | HasPatternField): number | Buffer {
+
+    const valueType = spec.valueType;
+
+    switch(valueType) {
+
+      case "bool":
+
+        return (value as boolean) ? 1 : 0;
+
+      case "enum":
+      case "varint":
+      case "sint32":
+
+        return value as number;
+
+      case "float": {
+
+        const buf = Buffer.alloc(FIXED32_SIZE);
+
+        buf.writeFloatLE(value as number, 0);
+
+        return buf;
+      }
+
+      case "fixed32": {
+
+        const buf = Buffer.alloc(FIXED32_SIZE);
+
+        buf.writeUInt32LE(value as number, 0);
+
+        return buf;
+      }
+
+      case "string":
+
+        return Buffer.from(value as string, "utf8");
+
+      default:
+
+        return value as number;
+    }
+  }
+
+  /**
+   * Send a command to an entity using schema-driven encoding. This unified method handles all entity command types by looking up the appropriate schema and encoding
+   * fields according to the schema specification.
+   *
+   * @param entityType - The type of entity (e.g., "switch", "light", "climate").
+   * @param id - The entity ID (format: "type-object_id").
+   * @param options - The command options as key-value pairs.
+   */
+  private sendEntityCommand(entityType: string, id: string, options: Record<string, unknown>): void {
+
+    // Look up the schema for this entity type. We use optional chaining to handle unknown entity types safely.
+    const schema = ENTITY_SCHEMAS[entityType] as typeof ENTITY_SCHEMAS[keyof typeof ENTITY_SCHEMAS] | undefined;
+
+    if(schema === undefined) {
+
+      this.log.warn("Unknown entity type: " + entityType + ".");
+
+      return;
+    }
+
+    // Verify this entity type supports commands.
+    if(!schema.command) {
+
+      this.log.warn("Entity type " + entityType + " does not support commands.");
+
+      return;
+    }
+
+    const commandSchema = schema.command;
+
+    // Look up the entity key using the provided ID.
+    const key = this.entityKeys.get(id);
+
+    // Log debugging information.
+    this.log.debug("sendEntityCommand - type: " + entityType + " | ID: " + id + " | KEY: " + key + " | options: " + JSON.stringify(options));
+
+    // Return early if the entity key is not found.
+    if(!key) {
+
+      this.log.warn("Entity key not found for ID: " + id + ".");
+
+      return;
+    }
+
+    // Apply enum mappings to transform string values to protocol enum numbers. This allows callers to use user-friendly strings like "heat" instead of numeric
+    // values like 3.
+    const transformedOptions: Record<string, unknown> = { ...options };
+
+    if(commandSchema.enumMappings) {
+
+      for(const [ fieldName, mapping ] of Object.entries(commandSchema.enumMappings)) {
+
+        const value = transformedOptions[fieldName];
+
+        if((typeof value === "string") && (value in mapping)) {
+
+          transformedOptions[fieldName] = mapping[value];
+        }
+      }
+    }
+
+    // Build the protobuf fields starting with the key field.
+    const fields: ProtoField[] = [this.buildKeyField(key)];
+
+    // Track which option keys we process so we can warn about unrecognized ones.
+    const processedKeys = new Set<string>();
+
+    // Process regular fields (non-has-pattern).
+    for(const [ optionName, fieldSpec ] of Object.entries(commandSchema.fields)) {
+
+      const value = transformedOptions[optionName];
+
+      if(value === undefined) {
+
+        continue;
+      }
+
+      processedKeys.add(optionName);
+
+      const encodedValue = this.encodeFieldValue(value, fieldSpec);
+
+      fields.push({
+
+        fieldNumber: fieldSpec.fieldNumber,
+        value: encodedValue,
+        wireType: fieldSpec.wireType
+      });
+    }
+
+    // Process has-pattern fields (fields that use the has_*/value pattern).
+    for(const [ optionName, hasPatternSpec ] of Object.entries(commandSchema.hasPatternFields)) {
+
+      const value = transformedOptions[optionName];
+
+      if(value === undefined) {
+
+        continue;
+      }
+
+      processedKeys.add(optionName);
+
+      // Add the "has" field (always a varint with value 1).
+      fields.push({
+
+        fieldNumber: hasPatternSpec.hasFieldNumber,
+        value: 1,
+        wireType: WireType.VARINT
+      });
+
+      // Add the value field.
+      const encodedValue = this.encodeFieldValue(value, hasPatternSpec);
+
+      fields.push({
+
+        fieldNumber: hasPatternSpec.valueFieldNumber,
+        value: encodedValue,
+        wireType: hasPatternSpec.wireType
+      });
+    }
+
+    // Log any option keys that weren't recognized by the schema. This helps catch typos and API misuse.
+    for(const optionKey of Object.keys(options)) {
+
+      if(!processedKeys.has(optionKey)) {
+
+        this.log.debug("sendEntityCommand: unrecognized option '" + optionKey + "' for entity type '" + entityType + "' (ignored).");
+      }
+    }
+
+    // Add device_id if present.
+    this.addDeviceIdField(fields, key, commandSchema.deviceIdFieldNumber);
+
+    // Encode and send the command request.
+    const payload = this.encodeProtoFields(fields);
+
+    this.frameAndSend(commandSchema.messageType, payload);
+  }
+
+  /**
    * Get entity key by ID. This looks up the numeric key for an entity given its string ID.
    *
    * @param id - The entity ID to look up.
@@ -4557,30 +4281,7 @@ export class EspHomeClient extends EventEmitter {
    */
   public sendSwitchCommand(id: string, state: boolean): void {
 
-    // Look up the entity key using the provided ID.
-    const key = this.entityKeys.get(id);
-
-    // Log debugging information.
-    this.log.debug("sendSwitchCommand - ID: " + id + " | KEY: " + key + " | state: " + state);
-
-    // Return early if the entity key is not found.
-    if(!key) {
-
-      this.log.warn("Entity key not found for ID: " + id + ".");
-
-      return;
-    }
-
-    // Build the protobuf fields.
-    const fields: ProtoField[] = [ this.buildKeyField(key), { fieldNumber: 2, value: state ? 1 : 0, wireType: WireType.VARINT } ];
-
-    // Add device_id if present (field 3).
-    this.addDeviceIdField(fields, key, 3);
-
-    // Encode and send the switch command request.
-    const payload = this.encodeProtoFields(fields);
-
-    this.frameAndSend(MessageType.SWITCH_COMMAND_REQUEST, payload);
+    this.sendEntityCommand("switch", id, { state });
   }
 
   /**
@@ -4590,30 +4291,7 @@ export class EspHomeClient extends EventEmitter {
    */
   public sendButtonCommand(id: string): void {
 
-    // Look up the entity key using the provided ID.
-    const key = this.entityKeys.get(id);
-
-    // Log debugging information.
-    this.log.debug("sendButtonCommand - ID: " + id + " | KEY: " + key);
-
-    // Return early if the entity key is not found.
-    if(!key) {
-
-      this.log.warn("Entity key not found for ID: " + id + ".");
-
-      return;
-    }
-
-    // Build the protobuf fields.
-    const fields: ProtoField[] = [this.buildKeyField(key)];
-
-    // Add device_id if present (field 2).
-    this.addDeviceIdField(fields, key, 2);
-
-    // Encode and send the button command request.
-    const payload = this.encodeProtoFields(fields);
-
-    this.frameAndSend(MessageType.BUTTON_COMMAND_REQUEST, payload);
+    this.sendEntityCommand("button", id, {});
   }
 
   /**
@@ -4654,75 +4332,7 @@ export class EspHomeClient extends EventEmitter {
       return;
     }
 
-    // Look up the entity key using the provided ID.
-    const key = this.entityKeys.get(id);
-
-    // Log debugging information.
-    this.log.debug("sendCoverCommand - ID: " + id + " | KEY: " + key + " | options: " + JSON.stringify(options));
-
-    // Return early if the entity key is not found.
-    if(!key) {
-
-      this.log.warn("Entity key not found for ID: " + id + ".");
-
-      return;
-    }
-
-    // Build the protobuf fields starting with the entity key.
-    const fields: ProtoField[] = [this.buildKeyField(key)];
-
-    // Add position field if specified (fields 4-5).
-    if(typeof options.position === "number") {
-
-      fields.push(
-
-        { fieldNumber: 4, value: 1, wireType: WireType.VARINT }
-      );
-
-      // Create position buffer as float32.
-      const positionBuf = Buffer.alloc(FIXED32_SIZE);
-
-      positionBuf.writeFloatLE(options.position, 0);
-      fields.push(
-
-        { fieldNumber: 5, value: positionBuf, wireType: WireType.FIXED32 }
-      );
-    }
-
-    // Add tilt field if specified (fields 6-7).
-    if(typeof options.tilt === "number") {
-
-      fields.push(
-
-        { fieldNumber: 6, value: 1, wireType: WireType.VARINT }
-      );
-
-      // Create tilt buffer as float32.
-      const tiltBuf = Buffer.alloc(FIXED32_SIZE);
-
-      tiltBuf.writeFloatLE(options.tilt, 0);
-      fields.push(
-
-        { fieldNumber: 7, value: tiltBuf, wireType: WireType.FIXED32 }
-      );
-    }
-
-    // Add stop field if specified (field 8).
-    if(options.stop) {
-
-      fields.push(
-
-        { fieldNumber: 8, value: 1, wireType: WireType.VARINT }
-      );
-    }
-
-    // Add device_id field if available (field 9).
-    this.addDeviceIdField(fields, key, 9);
-
-    // Encode and send the cover command request.
-    const payload = this.encodeProtoFields(fields);
-
-    this.frameAndSend(MessageType.COVER_COMMAND_REQUEST, payload);
+    this.sendEntityCommand("cover", id, options);
   }
 
   /**
@@ -4765,84 +4375,8 @@ export class EspHomeClient extends EventEmitter {
       return;
     }
 
-    // Look up the entity key using the provided ID.
-    const key = this.entityKeys.get(id);
-
-    // Log debugging information.
-    this.log.debug("sendFanCommand - ID: " + id + " | KEY: " + key + " | options: " + JSON.stringify(options));
-
-    // Return early if the entity key is not found.
-    if(!key) {
-
-      this.log.warn("Entity key not found for ID: " + id + ".");
-
-      return;
-    }
-
-    // Build the protobuf fields starting with the entity key.
-    const fields: ProtoField[] = [this.buildKeyField(key)];
-
-    // Add state field if specified. This controls whether the fan is on or off.
-    if(options.state !== undefined) {
-
-      fields.push(
-
-        { fieldNumber: 2, value: 1, wireType: WireType.VARINT },
-        { fieldNumber: 3, value: options.state ? 1 : 0, wireType: WireType.VARINT }
-      );
-    }
-
-    // Add speed level field if specified. This uses the modern speed_level field (fields 10-11) instead of the deprecated speed field (fields 4-5).
-    if(typeof options.speedLevel === "number") {
-
-      fields.push(
-
-        { fieldNumber: 10, value: 1, wireType: WireType.VARINT },
-        { fieldNumber: 11, value: options.speedLevel, wireType: WireType.VARINT }
-      );
-    }
-
-    // Add oscillating field if specified. This controls whether the fan oscillates or remains stationary.
-    if(options.oscillating !== undefined) {
-
-      fields.push(
-
-        { fieldNumber: 6, value: 1, wireType: WireType.VARINT },
-        { fieldNumber: 7, value: options.oscillating ? 1 : 0, wireType: WireType.VARINT }
-      );
-    }
-
-    // Add direction field if specified. This controls the rotation direction of the fan blades.
-    if(options.direction) {
-
-      const directionMap = { forward: 0, reverse: 1 };
-
-      fields.push(
-
-        { fieldNumber: 8, value: 1, wireType: WireType.VARINT },
-        { fieldNumber: 9, value: directionMap[options.direction], wireType: WireType.VARINT }
-      );
-    }
-
-    // Add preset mode field if specified. This allows selecting predefined fan operating modes.
-    if(options.presetMode) {
-
-      const presetBuf = Buffer.from(options.presetMode, "utf8");
-
-      fields.push(
-
-        { fieldNumber: 12, value: 1, wireType: WireType.VARINT },
-        { fieldNumber: 13, value: presetBuf, wireType: WireType.LENGTH_DELIMITED }
-      );
-    }
-
-    // Add device_id field if available (field 14).
-    this.addDeviceIdField(fields, key, 14);
-
-    // Encode and send the fan command request. This will update the fan entity on the ESPHome device with all specified parameters.
-    const payload = this.encodeProtoFields(fields);
-
-    this.frameAndSend(MessageType.FAN_COMMAND_REQUEST, payload);
+    // The schema's enumMappings handle direction string-to-number transformation.
+    this.sendEntityCommand("fan", id, options);
   }
 
   /**
@@ -4921,210 +4455,20 @@ export class EspHomeClient extends EventEmitter {
     flashLength?: number;
   }): void {
 
-    // Look up the entity key using the provided ID.
-    const key = this.entityKeys.get(id);
+    // Build command options, expanding RGB object into flat fields for the schema-driven encoding.
+    const commandOptions: Record<string, unknown> = { ...options };
 
-    // Log debugging information.
-    this.log.debug("sendLightCommand - ID: " + id + " | KEY: " + key + " | options: " + JSON.stringify(options));
-
-    // Return early if the entity key is not found.
-    if(!key) {
-
-      this.log.warn("Entity key not found for ID: " + id + ".");
-
-      return;
-    }
-
-    // Start building the protobuf fields.
-    const fields: ProtoField[] = [this.buildKeyField(key)];
-
-    // Add state fields if a state is specified.
-    if(options.state !== undefined) {
-
-      fields.push(
-
-        { fieldNumber: 2, value: 1, wireType: WireType.VARINT },
-        { fieldNumber: 3, value: options.state ? 1 : 0, wireType: WireType.VARINT }
-      );
-    }
-
-    // Add brightness fields if brightness is specified.
-    if(typeof options.brightness === "number") {
-
-      fields.push(
-
-        { fieldNumber: 4, value: 1, wireType: WireType.VARINT }
-      );
-
-      // Create brightness buffer.
-      const brightnessBuf = Buffer.alloc(FIXED32_SIZE);
-
-      brightnessBuf.writeFloatLE(options.brightness, 0);
-      fields.push(
-
-        { fieldNumber: 5, value: brightnessBuf, wireType: WireType.FIXED32 }
-      );
-    }
-
-    // Add RGB color fields if specified.
+    // Remove the rgb object and expand it into flat hasRgb, red, green, blue fields for schema-based encoding.
     if(options.rgb) {
 
-      fields.push(
-
-        { fieldNumber: 6, value: 1, wireType: WireType.VARINT }
-      );
-
-      // Create buffers for RGB values.
-      const redBuf = Buffer.alloc(FIXED32_SIZE);
-      const greenBuf = Buffer.alloc(FIXED32_SIZE);
-      const blueBuf = Buffer.alloc(FIXED32_SIZE);
-
-      redBuf.writeFloatLE(options.rgb.r, 0);
-      greenBuf.writeFloatLE(options.rgb.g, 0);
-      blueBuf.writeFloatLE(options.rgb.b, 0);
-
-      fields.push(
-
-        { fieldNumber: 7, value: redBuf, wireType: WireType.FIXED32 },
-        { fieldNumber: 8, value: greenBuf, wireType: WireType.FIXED32 },
-        { fieldNumber: 9, value: blueBuf, wireType: WireType.FIXED32 }
-      );
+      delete commandOptions.rgb;
+      commandOptions.blue = options.rgb.b;
+      commandOptions.green = options.rgb.g;
+      commandOptions.hasRgb = true;
+      commandOptions.red = options.rgb.r;
     }
 
-    // Add white channel field if specified.
-    if(typeof options.white === "number") {
-
-      fields.push(
-
-        { fieldNumber: 10, value: 1, wireType: WireType.VARINT }
-      );
-
-      const whiteBuf = Buffer.alloc(FIXED32_SIZE);
-
-      whiteBuf.writeFloatLE(options.white, 0);
-      fields.push(
-
-        { fieldNumber: 11, value: whiteBuf, wireType: WireType.FIXED32 }
-      );
-    }
-
-    // Add color temperature field if specified.
-    if(typeof options.colorTemperature === "number") {
-
-      fields.push(
-
-        { fieldNumber: 12, value: 1, wireType: WireType.VARINT }
-      );
-
-      const colorTempBuf = Buffer.alloc(FIXED32_SIZE);
-
-      colorTempBuf.writeFloatLE(options.colorTemperature, 0);
-      fields.push(
-
-        { fieldNumber: 13, value: colorTempBuf, wireType: WireType.FIXED32 }
-      );
-    }
-
-    // Add transition length field if specified.
-    if(typeof options.transitionLength === "number") {
-
-      fields.push(
-
-        { fieldNumber: 14, value: 1, wireType: WireType.VARINT },
-        { fieldNumber: 15, value: options.transitionLength, wireType: WireType.VARINT }
-      );
-    }
-
-    // Add flash length field if specified.
-    if(typeof options.flashLength === "number") {
-
-      fields.push(
-
-        { fieldNumber: 16, value: 1, wireType: WireType.VARINT },
-        { fieldNumber: 17, value: options.flashLength, wireType: WireType.VARINT }
-      );
-    }
-
-    // Add effect field if specified.
-    if(options.effect) {
-
-      const effectBuf = Buffer.from(options.effect, "utf8");
-
-      fields.push(
-
-        { fieldNumber: 18, value: 1, wireType: WireType.VARINT },
-        { fieldNumber: 19, value: effectBuf, wireType: WireType.LENGTH_DELIMITED }
-      );
-    }
-
-    // Add color brightness field if specified.
-    if(typeof options.colorBrightness === "number") {
-
-      fields.push(
-
-        { fieldNumber: 20, value: 1, wireType: WireType.VARINT }
-      );
-
-      const colorBrightBuf = Buffer.alloc(FIXED32_SIZE);
-
-      colorBrightBuf.writeFloatLE(options.colorBrightness, 0);
-      fields.push(
-
-        { fieldNumber: 21, value: colorBrightBuf, wireType: WireType.FIXED32 }
-      );
-    }
-
-    // Add color mode field if specified.
-    if(options.colorMode !== undefined) {
-
-      fields.push(
-
-        { fieldNumber: 22, value: 1, wireType: WireType.VARINT },
-        { fieldNumber: 23, value: options.colorMode, wireType: WireType.VARINT }
-      );
-    }
-
-    // Add cold white field if specified.
-    if(typeof options.coldWhite === "number") {
-
-      fields.push(
-
-        { fieldNumber: 24, value: 1, wireType: WireType.VARINT }
-      );
-
-      const coldWhiteBuf = Buffer.alloc(FIXED32_SIZE);
-
-      coldWhiteBuf.writeFloatLE(options.coldWhite, 0);
-      fields.push(
-
-        { fieldNumber: 25, value: coldWhiteBuf, wireType: WireType.FIXED32 }
-      );
-    }
-
-    // Add warm white field if specified.
-    if(typeof options.warmWhite === "number") {
-
-      fields.push(
-
-        { fieldNumber: 26, value: 1, wireType: WireType.VARINT }
-      );
-
-      const warmWhiteBuf = Buffer.alloc(FIXED32_SIZE);
-
-      warmWhiteBuf.writeFloatLE(options.warmWhite, 0);
-      fields.push(
-
-        { fieldNumber: 27, value: warmWhiteBuf, wireType: WireType.FIXED32 }
-      );
-    }
-
-    // Add device_id field if available (field 28).
-    this.addDeviceIdField(fields, key, 28);
-
-    // Encode and send the light command request.
-    const payload = this.encodeProtoFields(fields);
-
-    this.frameAndSend(MessageType.LIGHT_COMMAND_REQUEST, payload);
+    this.sendEntityCommand("light", id, commandOptions);
   }
 
   /**
@@ -5148,58 +4492,15 @@ export class EspHomeClient extends EventEmitter {
    */
   public sendLockCommand(id: string, command: "lock" | "unlock" | "open", code?: string): void {
 
-    // Look up the entity key using the provided ID.
-    const key = this.entityKeys.get(id);
+    // Build options with command string and optional code. The schema's enumMappings handle command string-to-number transformation.
+    const options: Record<string, unknown> = { command };
 
-    // Log debugging information.
-    this.log.debug("sendLockCommand - ID: " + id + " | KEY: " + key + " | command: " + command);
-
-    // Return early if the entity key is not found.
-    if(!key) {
-
-      this.log.warn("Entity key not found for ID: " + id + ".");
-
-      return;
-    }
-
-    // Map user-friendly commands to enum values using the LockCommand enum.
-    const cmdMap = {
-
-      lock: LockCommand.LOCK,
-      open: LockCommand.OPEN,
-      unlock: LockCommand.UNLOCK
-    };
-
-    // Build the protobuf fields.
-    const fields: ProtoField[] = [
-
-      this.buildKeyField(key),
-      { fieldNumber: 2, value: cmdMap[command], wireType: WireType.VARINT }
-    ];
-
-    // Add the optional code fields if a code is provided. According to the protocol, we need both has_code and code fields.
     if(code !== undefined) {
 
-      fields.push(
-
-        { fieldNumber: 3, value: 1, wireType: WireType.VARINT }
-      );
-
-      const codeBuf = Buffer.from(code, "utf8");
-
-      fields.push(
-
-        { fieldNumber: 4, value: codeBuf, wireType: WireType.LENGTH_DELIMITED }
-      );
+      options.code = code;
     }
 
-    // Add device_id if present (field 5).
-    this.addDeviceIdField(fields, key, 5);
-
-    // Encode and send the lock command request.
-    const payload = this.encodeProtoFields(fields);
-
-    this.frameAndSend(MessageType.LOCK_COMMAND_REQUEST, payload);
+    this.sendEntityCommand("lock", id, options);
   }
 
   /**
@@ -5286,217 +4587,8 @@ export class EspHomeClient extends EventEmitter {
       return;
     }
 
-    // Look up the entity key using the provided ID.
-    const key = this.entityKeys.get(id);
-
-    // Log debugging information.
-    this.log.debug("sendClimateCommand - ID: " + id + " | KEY: " + key + " | options: " + JSON.stringify(options));
-
-    // Return early if the entity key is not found.
-    if(!key) {
-
-      this.log.warn("Entity key not found for ID: " + id + ".");
-
-      return;
-    }
-
-    // Build the protobuf fields starting with the entity key.
-    const fields: ProtoField[] = [this.buildKeyField(key)];
-
-    // Add mode field if specified. The mode controls the primary operating state of the climate device.
-    if(options.mode) {
-
-      // Map user-friendly mode names to protocol enum values. These correspond to the ESPHome climate modes.
-      const modeMap = {
-
-        /* eslint-disable camelcase */
-        auto: ClimateMode.AUTO,
-        cool: ClimateMode.COOL,
-        dry: ClimateMode.DRY,
-        fan_only: ClimateMode.FAN_ONLY,
-        heat: ClimateMode.HEAT,
-        heat_cool: ClimateMode.HEAT_COOL,
-        off: ClimateMode.OFF
-        /* eslint-enable camelcase */
-      };
-
-      fields.push(
-
-        { fieldNumber: 2, value: 1, wireType: WireType.VARINT },
-        { fieldNumber: 3, value: modeMap[options.mode], wireType: WireType.VARINT }
-      );
-    }
-
-    // Add target temperature field if specified. This sets the desired temperature for single-setpoint modes like heat, cool, or auto.
-    if(typeof options.targetTemperature === "number") {
-
-      fields.push(
-
-        { fieldNumber: 4, value: 1, wireType: WireType.VARINT }
-      );
-
-      // Create temperature buffer as float32. Temperature values are sent as floating point to support decimal precision.
-      const tempBuf = Buffer.alloc(FIXED32_SIZE);
-
-      tempBuf.writeFloatLE(options.targetTemperature, 0);
-      fields.push(
-
-        { fieldNumber: 5, value: tempBuf, wireType: WireType.FIXED32 }
-      );
-    }
-
-    // Add target temperature low field if specified. This sets the lower bound for heat_cool mode operation.
-    if(typeof options.targetTemperatureLow === "number") {
-
-      fields.push(
-
-        { fieldNumber: 6, value: 1, wireType: WireType.VARINT }
-      );
-
-      // Create temperature buffer as float32 for the low setpoint.
-      const tempLowBuf = Buffer.alloc(FIXED32_SIZE);
-
-      tempLowBuf.writeFloatLE(options.targetTemperatureLow, 0);
-      fields.push(
-
-        { fieldNumber: 7, value: tempLowBuf, wireType: WireType.FIXED32 }
-      );
-    }
-
-    // Add target temperature high field if specified. This sets the upper bound for heat_cool mode operation.
-    if(typeof options.targetTemperatureHigh === "number") {
-
-      fields.push(
-
-        { fieldNumber: 8, value: 1, wireType: WireType.VARINT }
-      );
-
-      // Create temperature buffer as float32 for the high setpoint.
-      const tempHighBuf = Buffer.alloc(FIXED32_SIZE);
-
-      tempHighBuf.writeFloatLE(options.targetTemperatureHigh, 0);
-      fields.push(
-
-        { fieldNumber: 9, value: tempHighBuf, wireType: WireType.FIXED32 }
-      );
-    }
-
-    // Add fan mode field if specified. This controls how the fan operates within the climate system.
-    if(options.fanMode) {
-
-      // Map user-friendly fan mode names to protocol enum values. These correspond to the ESPHome climate fan modes.
-      const fanModeMap = {
-
-        auto: ClimateFanMode.AUTO,
-        diffuse: ClimateFanMode.DIFFUSE,
-        focus: ClimateFanMode.FOCUS,
-        high: ClimateFanMode.HIGH,
-        low: ClimateFanMode.LOW,
-        medium: ClimateFanMode.MEDIUM,
-        middle: ClimateFanMode.MIDDLE,
-        off: ClimateFanMode.OFF,
-        on: ClimateFanMode.ON,
-        quiet: ClimateFanMode.QUIET
-      };
-
-      fields.push(
-
-        { fieldNumber: 12, value: 1, wireType: WireType.VARINT },
-        { fieldNumber: 13, value: fanModeMap[options.fanMode], wireType: WireType.VARINT }
-      );
-    }
-
-    // Add swing mode field if specified. This controls the direction of airflow from the climate device.
-    if(options.swingMode) {
-
-      // Map user-friendly swing mode names to protocol enum values. These correspond to the ESPHome climate swing modes.
-      const swingModeMap = {
-
-        both: ClimateSwingMode.BOTH,
-        horizontal: ClimateSwingMode.HORIZONTAL,
-        off: ClimateSwingMode.OFF,
-        vertical: ClimateSwingMode.VERTICAL
-      };
-
-      fields.push(
-
-        { fieldNumber: 14, value: 1, wireType: WireType.VARINT },
-        { fieldNumber: 15, value: swingModeMap[options.swingMode], wireType: WireType.VARINT }
-      );
-    }
-
-    // Add custom fan mode field if specified. This allows setting device-specific fan modes not covered by the standard modes.
-    if(options.customFanMode) {
-
-      const customFanBuf = Buffer.from(options.customFanMode, "utf8");
-
-      fields.push(
-
-        { fieldNumber: 16, value: 1, wireType: WireType.VARINT },
-        { fieldNumber: 17, value: customFanBuf, wireType: WireType.LENGTH_DELIMITED }
-      );
-    }
-
-    // Add preset field if specified. Presets are predefined configurations for common scenarios.
-    if(options.preset) {
-
-      // Map user-friendly preset names to protocol enum values. These correspond to the ESPHome climate presets.
-      const presetMap = {
-
-        activity: ClimatePreset.ACTIVITY,
-        away: ClimatePreset.AWAY,
-        boost: ClimatePreset.BOOST,
-        comfort: ClimatePreset.COMFORT,
-        eco: ClimatePreset.ECO,
-        home: ClimatePreset.HOME,
-        none: ClimatePreset.NONE,
-        sleep: ClimatePreset.SLEEP
-      };
-
-      fields.push(
-
-        { fieldNumber: 18, value: 1, wireType: WireType.VARINT },
-        { fieldNumber: 19, value: presetMap[options.preset], wireType: WireType.VARINT }
-      );
-    }
-
-    // Add custom preset field if specified. This allows setting device-specific presets not covered by the standard presets.
-    if(options.customPreset) {
-
-      const customPresetBuf = Buffer.from(options.customPreset, "utf8");
-
-      fields.push(
-
-        { fieldNumber: 20, value: 1, wireType: WireType.VARINT },
-        { fieldNumber: 21, value: customPresetBuf, wireType: WireType.LENGTH_DELIMITED }
-      );
-    }
-
-    // Add target humidity field if specified. This controls the desired humidity level for climate devices with humidification capabilities.
-    if(typeof options.targetHumidity === "number") {
-
-      fields.push(
-
-        { fieldNumber: 22, value: 1, wireType: WireType.VARINT }
-      );
-
-      // Create humidity buffer as float32. Humidity is expressed as a percentage from 0 to 100.
-      const humidityBuf = Buffer.alloc(FIXED32_SIZE);
-
-      humidityBuf.writeFloatLE(options.targetHumidity, 0);
-      fields.push(
-
-        { fieldNumber: 23, value: humidityBuf, wireType: WireType.FIXED32 }
-      );
-    }
-
-    // Add device_id field if available (field 24).
-    this.addDeviceIdField(fields, key, 24);
-
-    // Encode and send the climate command request. This will update the climate entity on the ESPHome device with all specified parameters.
-    const payload = this.encodeProtoFields(fields);
-
-    this.frameAndSend(MessageType.CLIMATE_COMMAND_REQUEST, payload);
+    // The schema's enumMappings handle mode, fanMode, swingMode, and preset string-to-number transformations.
+    this.sendEntityCommand("climate", id, options);
   }
 
   /**
@@ -5519,41 +4611,7 @@ export class EspHomeClient extends EventEmitter {
    */
   public sendNumberCommand(id: string, value: number): void {
 
-    // Look up the entity key using the provided ID.
-    const key = this.entityKeys.get(id);
-
-    // Log debugging information.
-    this.log.debug("sendNumberCommand - ID: " + id + " | KEY: " + key + " | value: " + value);
-
-    // Return early if the entity key is not found.
-    if(!key) {
-
-      this.log.warn("Entity key not found for ID: " + id + ".");
-
-      return;
-    }
-
-    // Build the protobuf fields. Number commands consist of the entity key and the numeric value to set.
-    const fields: ProtoField[] = [this.buildKeyField(key)];
-
-    // Create a buffer to hold the value as a float32. Number entities in ESPHome use floating point values to support both integers and decimals.
-    const valueBuf = Buffer.alloc(FIXED32_SIZE);
-
-    valueBuf.writeFloatLE(value, 0);
-
-    // Add the state field with the value buffer. Field 2 contains the desired numeric value for the entity.
-    fields.push(
-
-      { fieldNumber: 2, value: valueBuf, wireType: WireType.FIXED32 }
-    );
-
-    // Add device_id if present (field 3).
-    this.addDeviceIdField(fields, key, 3);
-
-    // Encode and send the number command request. This will update the number entity on the ESPHome device to the specified value.
-    const payload = this.encodeProtoFields(fields);
-
-    this.frameAndSend(MessageType.NUMBER_COMMAND_REQUEST, payload);
+    this.sendEntityCommand("number", id, { state: value });
   }
 
   /**
@@ -5576,39 +4634,7 @@ export class EspHomeClient extends EventEmitter {
    */
   public sendSelectCommand(id: string, option: string): void {
 
-    // Look up the entity key using the provided ID.
-    const key = this.entityKeys.get(id);
-
-    // Log debugging information.
-    this.log.debug("sendSelectCommand - ID: " + id + " | KEY: " + key + " | option: " + option);
-
-    // Return early if the entity key is not found.
-    if(!key) {
-
-      this.log.warn("Entity key not found for ID: " + id + ".");
-
-      return;
-    }
-
-    // Build the protobuf fields. Select commands consist of the entity key and the selected option as a string.
-    const fields: ProtoField[] = [this.buildKeyField(key)];
-
-    // Convert the option string to a buffer for transmission. Select entities use string values to represent the selected option.
-    const optionBuf = Buffer.from(option, "utf8");
-
-    // Add the state field with the option buffer. Field 2 contains the desired option string for the entity.
-    fields.push(
-
-      { fieldNumber: 2, value: optionBuf, wireType: WireType.LENGTH_DELIMITED }
-    );
-
-    // Add device_id if present (field 3).
-    this.addDeviceIdField(fields, key, 3);
-
-    // Encode and send the select command request. This will update the select entity on the ESPHome device to the specified option.
-    const payload = this.encodeProtoFields(fields);
-
-    this.frameAndSend(MessageType.SELECT_COMMAND_REQUEST, payload);
+    this.sendEntityCommand("select", id, { state: option });
   }
 
   /**
@@ -5631,39 +4657,7 @@ export class EspHomeClient extends EventEmitter {
    */
   public sendTextCommand(id: string, text: string): void {
 
-    // Look up the entity key using the provided ID.
-    const key = this.entityKeys.get(id);
-
-    // Log debugging information.
-    this.log.debug("sendTextCommand - ID: " + id + " | KEY: " + key + " | text: " + text);
-
-    // Return early if the entity key is not found.
-    if(!key) {
-
-      this.log.warn("Entity key not found for ID: " + id + ".");
-
-      return;
-    }
-
-    // Build the protobuf fields. Text commands consist of the entity key and the text value to set.
-    const fields: ProtoField[] = [this.buildKeyField(key)];
-
-    // Convert the text string to a buffer for transmission. Text entities use UTF-8 encoded strings.
-    const textBuf = Buffer.from(text, "utf8");
-
-    // Add the state field with the text buffer. Field 2 contains the desired text value for the entity.
-    fields.push(
-
-      { fieldNumber: 2, value: textBuf, wireType: WireType.LENGTH_DELIMITED }
-    );
-
-    // Add device_id if present (field 3).
-    this.addDeviceIdField(fields, key, 3);
-
-    // Encode and send the text command request. This will update the text entity on the ESPHome device to the specified value.
-    const payload = this.encodeProtoFields(fields);
-
-    this.frameAndSend(MessageType.TEXT_COMMAND_REQUEST, payload);
+    this.sendEntityCommand("text", id, { state: text });
   }
 
   /**
@@ -5685,48 +4679,7 @@ export class EspHomeClient extends EventEmitter {
    */
   public sendDateCommand(id: string, year: number, month: number, day: number): void {
 
-    // Look up the entity key using the provided ID.
-    const key = this.entityKeys.get(id);
-
-    // Log debugging information.
-    this.log.debug("sendDateCommand - ID: " + id + " | KEY: " + key + " | date: " + year + "-" + month + "-" + day);
-
-    // Return early if the entity key is not found.
-    if(!key) {
-
-      this.log.warn("Entity key not found for ID: " + id + ".");
-
-      return;
-    }
-
-    // Build the protobuf fields. Date commands consist of the entity key and the date components as separate fields.
-    const fields: ProtoField[] = [this.buildKeyField(key)];
-
-    // Add the year field. Field 2 contains the year as a uint32 encoded as varint according to the protocol definition.
-    fields.push(
-
-      { fieldNumber: 2, value: year, wireType: WireType.VARINT }
-    );
-
-    // Add the month field. Field 3 contains the month (1-12) as a uint32 encoded as varint.
-    fields.push(
-
-      { fieldNumber: 3, value: month, wireType: WireType.VARINT }
-    );
-
-    // Add the day field. Field 4 contains the day of month (1-31) as a uint32 encoded as varint.
-    fields.push(
-
-      { fieldNumber: 4, value: day, wireType: WireType.VARINT }
-    );
-
-    // Add device_id if present (field 5).
-    this.addDeviceIdField(fields, key, 5);
-
-    // Encode and send the date command request. This will update the date entity on the ESPHome device to the specified date.
-    const payload = this.encodeProtoFields(fields);
-
-    this.frameAndSend(MessageType.DATE_COMMAND_REQUEST, payload);
+    this.sendEntityCommand("date", id, { day, month, year });
   }
 
   /**
@@ -5748,48 +4701,7 @@ export class EspHomeClient extends EventEmitter {
    */
   public sendTimeCommand(id: string, hour: number, minute: number, second: number = 0): void {
 
-    // Look up the entity key using the provided ID.
-    const key = this.entityKeys.get(id);
-
-    // Log debugging information.
-    this.log.debug("sendTimeCommand - ID: " + id + " | KEY: " + key + " | time: " + hour + ":" + minute + ":" + second);
-
-    // Return early if the entity key is not found.
-    if(!key) {
-
-      this.log.warn("Entity key not found for ID: " + id + ".");
-
-      return;
-    }
-
-    // Build the protobuf fields. Time commands consist of the entity key and the time components as separate fields.
-    const fields: ProtoField[] = [this.buildKeyField(key)];
-
-    // Add the hour field. Field 2 contains the hour (0-23) as a uint32 encoded as varint according to the protocol definition.
-    fields.push(
-
-      { fieldNumber: 2, value: hour, wireType: WireType.VARINT }
-    );
-
-    // Add the minute field. Field 3 contains the minute (0-59) as a uint32 encoded as varint.
-    fields.push(
-
-      { fieldNumber: 3, value: minute, wireType: WireType.VARINT }
-    );
-
-    // Add the second field. Field 4 contains the second (0-59) as a uint32 encoded as varint.
-    fields.push(
-
-      { fieldNumber: 4, value: second, wireType: WireType.VARINT }
-    );
-
-    // Add device_id if present (field 5).
-    this.addDeviceIdField(fields, key, 5);
-
-    // Encode and send the time command request. This will update the time entity on the ESPHome device to the specified time.
-    const payload = this.encodeProtoFields(fields);
-
-    this.frameAndSend(MessageType.TIME_COMMAND_REQUEST, payload);
+    this.sendEntityCommand("time", id, { hour, minute, second });
   }
 
   /**
@@ -5810,41 +4722,7 @@ export class EspHomeClient extends EventEmitter {
    */
   public sendDateTimeCommand(id: string, epochSeconds: number): void {
 
-    // Look up the entity key using the provided ID.
-    const key = this.entityKeys.get(id);
-
-    // Log debugging information.
-    this.log.debug("sendDateTimeCommand - ID: " + id + " | KEY: " + key + " | epochSeconds: " + epochSeconds);
-
-    // Return early if the entity key is not found.
-    if(!key) {
-
-      this.log.warn("Entity key not found for ID: " + id + ".");
-
-      return;
-    }
-
-    // Build the protobuf fields. DateTime commands consist of the entity key and the Unix timestamp.
-    const fields: ProtoField[] = [this.buildKeyField(key)];
-
-    // Create buffer for epoch seconds as fixed32. The epoch_seconds field is a fixed32 type in the protocol.
-    const epochBuf = Buffer.alloc(FIXED32_SIZE);
-
-    epochBuf.writeUInt32LE(epochSeconds, 0);
-
-    // Add the epoch seconds field. Field 2 contains the Unix timestamp as a fixed32 unsigned integer.
-    fields.push(
-
-      { fieldNumber: 2, value: epochBuf, wireType: WireType.FIXED32 }
-    );
-
-    // Add device_id if present (field 3).
-    this.addDeviceIdField(fields, key, 3);
-
-    // Encode and send the datetime command request. This will update the datetime entity on the ESPHome device to the specified timestamp.
-    const payload = this.encodeProtoFields(fields);
-
-    this.frameAndSend(MessageType.DATETIME_COMMAND_REQUEST, payload);
+    this.sendEntityCommand("datetime", id, { epochSeconds });
   }
 
   /**
@@ -5922,80 +4800,7 @@ export class EspHomeClient extends EventEmitter {
       return;
     }
 
-    // Look up the entity key using the provided ID.
-    const key = this.entityKeys.get(id);
-
-    // Log debugging information.
-    this.log.debug("sendMediaPlayerCommand - ID: " + id + " | KEY: " + key + " | options: " + JSON.stringify(options));
-
-    // Return early if the entity key is not found.
-    if(!key) {
-
-      this.log.warn("Entity key not found for ID: " + id + ".");
-
-      return;
-    }
-
-    // Build the protobuf fields starting with the entity key.
-    const fields: ProtoField[] = [this.buildKeyField(key)];
-
-    // Add command field if specified. Media player commands use the MediaPlayerCommand enum directly.
-    if(options.command !== undefined) {
-
-      fields.push(
-
-        { fieldNumber: 2, value: 1, wireType: WireType.VARINT },
-        { fieldNumber: 3, value: options.command, wireType: WireType.VARINT }
-      );
-    }
-
-    // Add volume field if specified. Volume is sent as a float32 value between 0.0 and 1.0.
-    if(typeof options.volume === "number") {
-
-      fields.push(
-
-        { fieldNumber: 4, value: 1, wireType: WireType.VARINT }
-      );
-
-      // Create volume buffer as float32.
-      const volumeBuf = Buffer.alloc(FIXED32_SIZE);
-
-      volumeBuf.writeFloatLE(options.volume, 0);
-      fields.push(
-
-        { fieldNumber: 5, value: volumeBuf, wireType: WireType.FIXED32 }
-      );
-    }
-
-    // Add media URL field if specified. This allows playing content from a specific URL.
-    if(options.mediaUrl) {
-
-      const urlBuf = Buffer.from(options.mediaUrl, "utf8");
-
-      fields.push(
-
-        { fieldNumber: 6, value: 1, wireType: WireType.VARINT },
-        { fieldNumber: 7, value: urlBuf, wireType: WireType.LENGTH_DELIMITED }
-      );
-    }
-
-    // Add announcement field if specified. Announcements interrupt current playback and restore it afterwards.
-    if(options.announcement !== undefined) {
-
-      fields.push(
-
-        { fieldNumber: 8, value: 1, wireType: WireType.VARINT },
-        { fieldNumber: 9, value: options.announcement ? 1 : 0, wireType: WireType.VARINT }
-      );
-    }
-
-    // Add device_id if present (field 10).
-    this.addDeviceIdField(fields, key, 10);
-
-    // Encode and send the media player command request.
-    const payload = this.encodeProtoFields(fields);
-
-    this.frameAndSend(MessageType.MEDIA_PLAYER_COMMAND_REQUEST, payload);
+    this.sendEntityCommand("media_player", id, options);
   }
 
   /**
@@ -6023,60 +4828,15 @@ export class EspHomeClient extends EventEmitter {
   public sendAlarmControlPanelCommand(id: string, command: "disarm" | "arm_home" | "arm_away" | "arm_night" | "arm_vacation" | "arm_custom_bypass" | "trigger",
     code?: string): void {
 
-    // Look up the entity key using the provided ID.
-    const key = this.entityKeys.get(id);
+    // Build options with command string and optional code. The schema's enumMappings handle command string-to-number transformation.
+    const options: Record<string, unknown> = { command };
 
-    // Log debugging information.
-    this.log.debug("sendAlarmControlPanelCommand - ID: " + id + " | KEY: " + key + " | command: " + command + (code ? " | with code" : ""));
-
-    // Return early if the entity key is not found.
-    if(!key) {
-
-      this.log.warn("Entity key not found for ID: " + id + ".");
-
-      return;
-    }
-
-    // Map user-friendly commands to protocol enum values using AlarmControlPanelCommand enum.
-    const cmdMap = {
-
-      /* eslint-disable camelcase */
-      arm_away: AlarmControlPanelCommand.ARM_AWAY,
-      arm_custom_bypass: AlarmControlPanelCommand.ARM_CUSTOM_BYPASS,
-      arm_home: AlarmControlPanelCommand.ARM_HOME,
-      arm_night: AlarmControlPanelCommand.ARM_NIGHT,
-      arm_vacation: AlarmControlPanelCommand.ARM_VACATION,
-      disarm: AlarmControlPanelCommand.DISARM,
-      trigger: AlarmControlPanelCommand.TRIGGER
-      /* eslint-enable camelcase */
-    };
-
-    // Build the protobuf fields according to AlarmControlPanelCommandRequest specification.
-    const fields: ProtoField[] = [
-
-      this.buildKeyField(key),
-      { fieldNumber: 2, value: cmdMap[command], wireType: WireType.VARINT }
-    ];
-
-    // Add the optional code field if provided (field 3: string).
-    // Many alarm systems require a code for arming or disarming.
     if((code !== undefined) && (code !== "")) {
 
-      const codeBuf = Buffer.from(code, "utf8");
-
-      fields.push(
-
-        { fieldNumber: 3, value: codeBuf, wireType: WireType.LENGTH_DELIMITED }
-      );
+      options.code = code;
     }
 
-    // Add device_id if present (field 4).
-    this.addDeviceIdField(fields, key, 4);
-
-    // Encode and send the alarm control panel command request.
-    const payload = this.encodeProtoFields(fields);
-
-    this.frameAndSend(MessageType.ALARM_CONTROL_PANEL_COMMAND_REQUEST, payload);
+    this.sendEntityCommand("alarm_control_panel", id, options);
   }
 
   /**
@@ -6116,80 +4876,15 @@ export class EspHomeClient extends EventEmitter {
       return;
     }
 
-    // Look up the entity key using the provided ID.
-    const key = this.entityKeys.get(id);
+    // Transform duration to integer if provided since it's a varint (uint32) in the protocol.
+    const commandOptions: Record<string, unknown> = { ...options };
 
-    // Log debugging information.
-    this.log.debug("sendSirenCommand - ID: " + id + " | KEY: " + key + " | options: " + JSON.stringify(options));
-
-    // Return early if the entity key is not found.
-    if(!key) {
-
-      this.log.warn("Entity key not found for ID: " + id + ".");
-
-      return;
-    }
-
-    // Build the protobuf fields starting with the entity key.
-    const fields: ProtoField[] = [this.buildKeyField(key)];
-
-    // Add state field if specified. This controls whether the siren is active or not.
-    if(options.state !== undefined) {
-
-      fields.push(
-
-        { fieldNumber: 2, value: 1, wireType: WireType.VARINT },
-        { fieldNumber: 3, value: options.state ? 1 : 0, wireType: WireType.VARINT }
-      );
-    }
-
-    // Add tone field if specified. This selects the siren sound pattern or tone to use.
-    if(options.tone) {
-
-      const toneBuf = Buffer.from(options.tone, "utf8");
-
-      fields.push(
-
-        { fieldNumber: 4, value: 1, wireType: WireType.VARINT },
-        { fieldNumber: 5, value: toneBuf, wireType: WireType.LENGTH_DELIMITED }
-      );
-    }
-
-    // Add duration field if specified. This sets how long the siren should sound in seconds as a uint32.
     if(typeof options.duration === "number") {
 
-      fields.push(
-
-        { fieldNumber: 6, value: 1, wireType: WireType.VARINT },
-        { fieldNumber: 7, value: Math.round(options.duration), wireType: WireType.VARINT }
-      );
+      commandOptions.duration = Math.round(options.duration);
     }
 
-    // Add volume field if specified. Volume is sent as a float32 value between 0.0 and 1.0.
-    if(typeof options.volume === "number") {
-
-      fields.push(
-
-        { fieldNumber: 8, value: 1, wireType: WireType.VARINT }
-      );
-
-      // Create volume buffer as float32.
-      const volumeBuf = Buffer.alloc(FIXED32_SIZE);
-
-      volumeBuf.writeFloatLE(options.volume, 0);
-      fields.push(
-
-        { fieldNumber: 9, value: volumeBuf, wireType: WireType.FIXED32 }
-      );
-    }
-
-    // Add device_id if present (field 10).
-    this.addDeviceIdField(fields, key, 10);
-
-    // Encode and send the siren command request.
-    const payload = this.encodeProtoFields(fields);
-
-    this.frameAndSend(MessageType.SIREN_COMMAND_REQUEST, payload);
+    this.sendEntityCommand("siren", id, commandOptions);
   }
 
   /**
@@ -6209,37 +4904,8 @@ export class EspHomeClient extends EventEmitter {
    */
   public sendUpdateCommand(id: string, command: "none" | "update" | "check"): void {
 
-    // Look up the entity key using the provided ID.
-    const key = this.entityKeys.get(id);
-
-    // Log debugging information.
-    this.log.debug("sendUpdateCommand - ID: " + id + " | KEY: " + key + " | command: " + command);
-
-    // Return early if the entity key is not found.
-    if(!key) {
-
-      this.log.warn("Entity key not found for ID: " + id + ".");
-
-      return;
-    }
-
-    // Map user-friendly commands to protocol enum values. These control the update entity's behavior according to the UpdateCommand enum.
-    const cmdMap = { check: 2, none: 0, update: 1 };
-
-    // Build the protobuf fields. Update commands consist of the entity key and the command to execute.
-    const fields: ProtoField[] = [
-
-      this.buildKeyField(key),
-      { fieldNumber: 2, value: cmdMap[command], wireType: WireType.VARINT }
-    ];
-
-    // Add device_id if present (field 3).
-    this.addDeviceIdField(fields, key, 3);
-
-    // Encode and send the update command request. This will trigger the specified update action on the ESPHome device.
-    const payload = this.encodeProtoFields(fields);
-
-    this.frameAndSend(MessageType.UPDATE_COMMAND_REQUEST, payload);
+    // The schema's enumMappings handle command string-to-number transformation.
+    this.sendEntityCommand("update", id, { command });
   }
 
   /**
@@ -6319,58 +4985,7 @@ export class EspHomeClient extends EventEmitter {
       return;
     }
 
-    // Look up the entity key using the provided ID.
-    const key = this.entityKeys.get(id);
-
-    // Log debugging information.
-    this.log.debug("sendValveCommand - ID: " + id + " | KEY: " + key + " | options: " + JSON.stringify(options));
-
-    // Return early if the entity key is not found.
-    if(!key) {
-
-      this.log.warn("Entity key not found for ID: " + id + ".");
-
-      return;
-    }
-
-    // Build the protobuf fields according to ValveCommandRequest specification.
-    const fields: ProtoField[] = [this.buildKeyField(key)];
-
-    // Add position fields if specified. Position controls how open the valve is from 0.0 (closed) to 1.0 (fully open).
-    if(typeof options.position === "number") {
-
-      // Add has_position flag (field 2: bool).
-      fields.push(
-
-        { fieldNumber: 2, value: 1, wireType: WireType.VARINT }
-      );
-
-      // Create position buffer as float32 (field 3: float).
-      const positionBuf = Buffer.alloc(FIXED32_SIZE);
-
-      positionBuf.writeFloatLE(options.position, 0);
-      fields.push(
-
-        { fieldNumber: 3, value: positionBuf, wireType: WireType.FIXED32 }
-      );
-    }
-
-    // Add stop field if specified (field 4: bool). This halts the valve at its current position.
-    if(options.stop === true) {
-
-      fields.push(
-
-        { fieldNumber: 4, value: 1, wireType: WireType.VARINT }
-      );
-    }
-
-    // Add device_id if present (field 5).
-    this.addDeviceIdField(fields, key, 5);
-
-    // Encode and send the valve command request.
-    const payload = this.encodeProtoFields(fields);
-
-    this.frameAndSend(MessageType.VALVE_COMMAND_REQUEST, payload);
+    this.sendEntityCommand("valve", id, options);
   }
 
   /**

@@ -37,5 +37,11 @@ The ESPHome native API is a binary protocol based on Protocol Buffers, and imple
 | Module | Description |
 | ------ | ------ |
 | [crypto-noise](crypto-noise.md) | Node-native Noise_NNpsk0_25519_ChaChaPoly_SHA256 handshake implementation with no external dependencies. |
+| [entity-types](entity-types.md) | Entity type definitions for the ESPHome protocol. |
 | [esphome-client](esphome-client.md) | ESPHome native API client with complete protocol and encryption support. |
+| [protocol](protocol.md) | ESPHome protocol constants and wire format definitions. |
+| [protocol/message-types](protocol/message-types.md) | ESPHome API message type identifiers for protocol communication. |
+| [protocol/wire-types](protocol/wire-types.md) | Protocol buffer wire types for encoding and decoding ESPHome API messages. |
+| [schemas](schemas.md) | Entity schema definitions and type interfaces for the ESPHome protocol. |
+| [schemas/entity-schemas](schemas/entity-schemas.md) | Centralized schema definitions for all 22 ESPHome entity types. |
 | [types](types.md) | Shared types and utilities. |

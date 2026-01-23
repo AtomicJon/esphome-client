@@ -152,6 +152,12 @@ To use this library in Node, install it from the command line:
 npm install esphome-client
 ```
 
+### Requirements
+
+- **Node.js 20 or later** - This library uses modern Node.js features and APIs
+- **Node.js only** - This library is not compatible with browsers. It relies on Node.js built-in modules (`net` for TCP sockets, `crypto` for encryption) that are not available in browser environments.
+- **ESPHome 2025.10 or later** - Earlier ESPHome firmware versions are not supported.
+
 ### Command Line Tool
 The package includes `espc`, a CLI utility for interacting with ESPHome devices:
 
@@ -174,6 +180,27 @@ espc --host 192.168.1.100 -i
 ```
 
 The CLI supports all ESPHome entity types including switches, lights, covers, fans, locks, climate controls, and more. Use `espc --help` for full documentation.
+
+## Entity ID Format
+
+All command methods and state events use entity IDs to identify specific entities on the device. Entity IDs follow the pattern:
+
+```
+{type}-{object_id}
+```
+
+Where:
+- **type** is one of the 22 supported entity types: `alarm_control_panel`, `binary_sensor`, `button`, `climate`, `cover`, `date`, `datetime`, `event`, `fan`, `light`, `lock`, `media_player`, `number`, `select`, `sensor`, `siren`, `switch`, `text`, `text_sensor`, `time`, `update`, `valve`
+- **object_id** is the ID specified in your ESPHome YAML configuration (the `id` field of the component)
+
+Examples:
+- `light-bedroom_lamp` - A light with `id: bedroom_lamp` in the ESPHome config
+- `switch-relay_1` - A switch with `id: relay_1`
+- `sensor-temperature` - A sensor with `id: temperature`
+- `cover-garage_door` - A cover with `id: garage_door`
+- `climate-thermostat` - A climate entity with `id: thermostat`
+
+To discover all entity IDs on a connected device, use `client.logAllEntityIds()` after connection or listen to the `entities` event.
 
 ## Quick Start
 
@@ -200,6 +227,8 @@ client.on("connect", (encrypted) => {
 });
 
 // Listen for discovered entities. This fires after the device reports all configured entities.
+// Each entity is a typed object with extended metadata: icon, deviceClass, unitOfMeasurement,
+// stateClass, entityCategory, and type-specific fields (e.g., effects for lights, options for selects).
 client.on("entities", (entities) => {
   console.log("Discovered entities:", entities);
 });
@@ -439,6 +468,29 @@ client.on("voiceAssistantAnnounceFinished", (success) => {
 });
 ```
 
+### Custom Logger
+```typescript
+import { EspHomeClient } from "esphome-client";
+import type { EspHomeLogging } from "esphome-client";
+
+// We define a custom logger that implements the EspHomeLogging interface. All four methods (debug, error, info, warn) are required. By default, the library logs
+// to the console, but you can redirect output to your own logging infrastructure.
+const customLogger: EspHomeLogging = {
+
+  debug: (message, ...params) => console.debug("[DEBUG]", message, ...params),
+  error: (message, ...params) => console.error("[ERROR]", message, ...params),
+  info: (message, ...params) => console.info("[INFO]", message, ...params),
+  warn: (message, ...params) => console.warn("[WARN]", message, ...params)
+};
+
+// We pass the logger in the client options.
+const client = new EspHomeClient({
+
+  host: "192.168.1.100",
+  logger: customLogger
+});
+```
+
 ## Noise Protocol Encryption
 
 This library includes a complete, Node-native implementation of the Noise Protocol Framework, specifically the `Noise_NNpsk0_25519_ChaChaPoly_SHA256` handshake pattern used by ESPHome. The implementation:
@@ -503,7 +555,7 @@ socket.on("data", (data) => {
 
 ## API Documentation
 
-Complete API documentation is available through TypeDoc. The library provides comprehensive TypeScript definitions for all message types, entity types, and protocol structures.
+Complete API documentation is available in the [docs](https://github.com/hjdhjd/esphome-client/tree/main/docs) directory. The library provides comprehensive TypeScript definitions for all message types, entity types, and protocol structures.
 
 ### Key Classes and Interfaces
 
@@ -561,7 +613,7 @@ Contributions are welcome! The library has complete protocol support, but there 
 
 1. **Testing** - Add unit tests and integration tests
 2. **Documentation** - Improve examples and API documentation
-4. **Bug fixes** - Report and fix any issues you encounter
+3. **Bug fixes** - Report and fix any issues you encounter
 
 Please ensure all code follows the existing style and includes appropriate TypeScript types.
 

@@ -1,4 +1,4 @@
-/* Copyright(C) 2017-2025, HJD (https://github.com/hjdhjd). All rights reserved.
+/* Copyright(C) 2017-2026, HJD (https://github.com/hjdhjd). All rights reserved.
  *
  * eslint.config.mjs: Linting defaults for Homebridge plugins.
  */
@@ -13,7 +13,7 @@ export default ts.config(
 
   {
 
-    files: ["src/**.ts"],
+    files: ["src/**/*.ts"],
     rules: {
 
       ...hbPluginUtils.rules.ts
@@ -22,7 +22,7 @@ export default ts.config(
 
   {
 
-    files: [ "homebridge-ui/public/**/*.@(js|mjs)", "homebridge-ui/server.js", "eslint.config.mjs" ],
+    files: ["eslint.config.mjs"],
     rules: {
 
       ...hbPluginUtils.rules.js
@@ -31,7 +31,7 @@ export default ts.config(
 
   {
 
-    files: [ "src/**.ts", "homebridge-ui/*.@(js|mjs)", "homebridge-ui/public/**/*.@(js|mjs)", "eslint.config.mjs" ],
+    files: [ "src/**/*.ts", "eslint.config.mjs" ],
 
     ignores: ["dist"],
 
@@ -45,7 +45,7 @@ export default ts.config(
 
         projectService: {
 
-          allowDefaultProject: [ "eslint.config.mjs", "homebridge-ui/*.@(js|mjs)", "homebridge-ui/public/*.@(js|mjs)", "homebridge-ui/public/lib/*.@(js|mjs)" ],
+          allowDefaultProject: ["eslint.config.mjs"],
           defaultProject: "./tsconfig.json"
         }
       },
@@ -66,33 +66,6 @@ export default ts.config(
     rules: {
 
       ...hbPluginUtils.rules.common
-    }
-  },
-
-  {
-
-    files: [ "homebridge-ui/public/lib/webUi.mjs", "homebridge-ui/public/lib/webUi-featureoptions.mjs", "homebridge-ui/public/ui.mjs" ],
-
-    languageOptions: {
-
-      globals: {
-
-        ...hbPluginUtils.globals.ui
-      }
-    }
-  },
-
-  {
-
-    files: ["homebridge-ui/server.js"],
-
-    languageOptions: {
-
-      globals: {
-
-        console: "readonly",
-        fetch: "readonly"
-      }
     }
   }
 );

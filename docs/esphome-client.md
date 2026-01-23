@@ -449,10 +449,10 @@ provides supplemental flags or modes, we carry them through verbatim.
 | Property | Type | Overrides | Inherited from |
 | ------ | ------ | ------ | ------ |
 | <a id="deviceid"></a> `deviceId?` | `number` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`deviceId`](#deviceid-17) |
-| <a id="entity"></a> `entity` | `string` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`entity`](#entity-18) |
-| <a id="key"></a> `key` | `number` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`key`](#key-19) |
+| <a id="entity"></a> `entity` | `string` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`entity`](#entity-17) |
+| <a id="key"></a> `key` | `number` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`key`](#key-18) |
 | <a id="state"></a> `state?` | `number` | - | - |
-| <a id="type"></a> `type` | `"alarm_control_panel"` | [`TelemetryBaseEvent`](#telemetrybaseevent).[`type`](#type-20) | - |
+| <a id="type"></a> `type` | `"alarm_control_panel"` | [`TelemetryBaseEvent`](#telemetrybaseevent).[`type`](#type-19) | - |
 
 ***
 
@@ -470,11 +470,11 @@ consumers can distinguish between "present but falsy" and "not present".
 | Property | Type | Overrides | Inherited from |
 | ------ | ------ | ------ | ------ |
 | <a id="deviceid-1"></a> `deviceId?` | `number` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`deviceId`](#deviceid-17) |
-| <a id="entity-1"></a> `entity` | `string` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`entity`](#entity-18) |
-| <a id="key-1"></a> `key` | `number` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`key`](#key-19) |
+| <a id="entity-1"></a> `entity` | `string` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`entity`](#entity-17) |
+| <a id="key-1"></a> `key` | `number` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`key`](#key-18) |
 | <a id="missingstate"></a> `missingState?` | `boolean` | - | - |
 | <a id="state-1"></a> `state?` | `boolean` | - | - |
-| <a id="type-1"></a> `type` | `"binary_sensor"` | [`TelemetryBaseEvent`](#telemetrybaseevent).[`type`](#type-20) | - |
+| <a id="type-1"></a> `type` | `"binary_sensor"` | [`TelemetryBaseEvent`](#telemetrybaseevent).[`type`](#type-19) | - |
 
 ***
 
@@ -492,10 +492,10 @@ on `type` to discriminate, `key` for wire identity, and `entity` for human-reada
 | Property | Type | Overrides | Inherited from |
 | ------ | ------ | ------ | ------ |
 | <a id="deviceid-2"></a> `deviceId?` | `number` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`deviceId`](#deviceid-17) |
-| <a id="entity-2"></a> `entity` | `string` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`entity`](#entity-18) |
-| <a id="key-2"></a> `key` | `number` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`key`](#key-19) |
+| <a id="entity-2"></a> `entity` | `string` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`entity`](#entity-17) |
+| <a id="key-2"></a> `key` | `number` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`key`](#key-18) |
 | <a id="pressed"></a> `pressed?` | `boolean` | - | - |
-| <a id="type-2"></a> `type` | `"button"` | [`TelemetryBaseEvent`](#telemetrybaseevent).[`type`](#type-20) | - |
+| <a id="type-2"></a> `type` | `"button"` | [`TelemetryBaseEvent`](#telemetrybaseevent).[`type`](#type-19) | - |
 
 ***
 
@@ -537,7 +537,7 @@ resorting to `any`.
 | <a id="datetime"></a> `datetime` | [`DateTimeEvent`](#datetimeevent) | - |
 | <a id="deviceinfo-2"></a> `deviceInfo` | [`DeviceInfo`](#deviceinfo-3) | - |
 | <a id="disconnect-2"></a> `disconnect` | `string` \| `undefined` | - |
-| <a id="entities"></a> `entities` | `Record`\<`string`, `unknown`\> | - |
+| <a id="entities"></a> `entities` | [`Entity`](entity-types.md#entity)[] | - |
 | <a id="event"></a> `event` | [`EventEntityEvent`](#evententityevent) | - |
 | <a id="fan-1"></a> `fan` | [`FanEvent`](#fanevent) | - |
 | <a id="heartbeat"></a> `heartbeat` | \{ `uptime?`: `number`; \} | - |
@@ -592,9 +592,9 @@ the canonical `key`. We omit any `type` field from the decoded shapes to avoid c
 | <a id="customfanmode"></a> `customFanMode?` | `string` | - | `Omit.customFanMode` |
 | <a id="custompreset"></a> `customPreset?` | `string` | - | `Omit.customPreset` |
 | <a id="deviceid-3"></a> `deviceId?` | `number` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`deviceId`](#deviceid-17) |
-| <a id="entity-3"></a> `entity` | `string` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`entity`](#entity-18) |
+| <a id="entity-3"></a> `entity` | `string` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`entity`](#entity-17) |
 | <a id="fanmode"></a> `fanMode?` | `number` | - | `Omit.fanMode` |
-| <a id="key-3"></a> `key` | `number` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`key`](#key-19) |
+| <a id="key-3"></a> `key` | `number` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`key`](#key-18) |
 | <a id="mode"></a> `mode?` | `number` | - | `Omit.mode` |
 | <a id="preset"></a> `preset?` | `number` | - | `Omit.preset` |
 | <a id="swingmode"></a> `swingMode?` | `number` | - | `Omit.swingMode` |
@@ -602,7 +602,7 @@ the canonical `key`. We omit any `type` field from the decoded shapes to avoid c
 | <a id="targettemperature"></a> `targetTemperature?` | `string` \| `number` | - | `Omit.targetTemperature` |
 | <a id="targettemperaturehigh"></a> `targetTemperatureHigh?` | `string` \| `number` | - | `Omit.targetTemperatureHigh` |
 | <a id="targettemperaturelow"></a> `targetTemperatureLow?` | `string` \| `number` | - | `Omit.targetTemperatureLow` |
-| <a id="type-3"></a> `type` | `"climate"` | [`TelemetryBaseEvent`](#telemetrybaseevent).[`type`](#type-20) | - |
+| <a id="type-3"></a> `type` | `"climate"` | [`TelemetryBaseEvent`](#telemetrybaseevent).[`type`](#type-19) | - |
 | <a id="value"></a> `value?` | `string` \| `number` | - | `Omit.value` |
 
 ***
@@ -622,11 +622,11 @@ on `type` to discriminate, `key` for wire identity, and `entity` for human-reada
 | ------ | ------ | ------ | ------ |
 | <a id="currentoperation"></a> `currentOperation?` | `number` | - | `Omit.currentOperation` |
 | <a id="deviceid-4"></a> `deviceId?` | `number` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`deviceId`](#deviceid-17) |
-| <a id="entity-4"></a> `entity` | `string` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`entity`](#entity-18) |
-| <a id="key-4"></a> `key` | `number` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`key`](#key-19) |
+| <a id="entity-4"></a> `entity` | `string` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`entity`](#entity-17) |
+| <a id="key-4"></a> `key` | `number` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`key`](#key-18) |
 | <a id="position"></a> `position?` | `number` | - | `Omit.position` |
 | <a id="tilt"></a> `tilt?` | `number` | - | `Omit.tilt` |
-| <a id="type-4"></a> `type` | `"cover"` | [`TelemetryBaseEvent`](#telemetrybaseevent).[`type`](#type-20) | - |
+| <a id="type-4"></a> `type` | `"cover"` | [`TelemetryBaseEvent`](#telemetrybaseevent).[`type`](#type-19) | - |
 
 ***
 
@@ -645,11 +645,11 @@ on `type` to discriminate, `key` for wire identity, and `entity` for human-reada
 | ------ | ------ | ------ | ------ |
 | <a id="day"></a> `day?` | `number` | - | - |
 | <a id="deviceid-5"></a> `deviceId?` | `number` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`deviceId`](#deviceid-17) |
-| <a id="entity-5"></a> `entity` | `string` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`entity`](#entity-18) |
-| <a id="key-5"></a> `key` | `number` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`key`](#key-19) |
+| <a id="entity-5"></a> `entity` | `string` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`entity`](#entity-17) |
+| <a id="key-5"></a> `key` | `number` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`key`](#key-18) |
 | <a id="missingstate-1"></a> `missingState?` | `boolean` | - | - |
 | <a id="month"></a> `month?` | `number` | - | - |
-| <a id="type-5"></a> `type` | `"date"` | [`TelemetryBaseEvent`](#telemetrybaseevent).[`type`](#type-20) | - |
+| <a id="type-5"></a> `type` | `"date"` | [`TelemetryBaseEvent`](#telemetrybaseevent).[`type`](#type-19) | - |
 | <a id="year"></a> `year?` | `number` | - | - |
 
 ***
@@ -668,11 +668,11 @@ on `type` to discriminate, `key` for wire identity, and `entity` for human-reada
 | Property | Type | Overrides | Inherited from |
 | ------ | ------ | ------ | ------ |
 | <a id="deviceid-6"></a> `deviceId?` | `number` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`deviceId`](#deviceid-17) |
-| <a id="entity-6"></a> `entity` | `string` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`entity`](#entity-18) |
+| <a id="entity-6"></a> `entity` | `string` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`entity`](#entity-17) |
 | <a id="epochseconds"></a> `epochSeconds?` | `number` | - | - |
-| <a id="key-6"></a> `key` | `number` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`key`](#key-19) |
+| <a id="key-6"></a> `key` | `number` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`key`](#key-18) |
 | <a id="missingstate-2"></a> `missingState?` | `boolean` | - | - |
-| <a id="type-6"></a> `type` | `"datetime"` | [`TelemetryBaseEvent`](#telemetrybaseevent).[`type`](#type-20) | - |
+| <a id="type-6"></a> `type` | `"datetime"` | [`TelemetryBaseEvent`](#telemetrybaseevent).[`type`](#type-19) | - |
 
 ***
 
@@ -703,21 +703,6 @@ Device information received from the ESPHome device. This structure contains all
 | <a id="usespassword"></a> `usesPassword?` | `boolean` | Whether the device uses password authentication (field 1). |
 | <a id="voiceassistantfeatureflags"></a> `voiceAssistantFeatureFlags?` | `number` | Voice assistant feature flags (field 17). |
 | <a id="webserverport"></a> `webserverPort?` | `number` | Port number of the web server if enabled (field 10). |
-
-***
-
-### Entity
-
-Represents one entity from the ESPHome device. An entity is any controllable or observable component on the device.
-
-#### Properties
-
-| Property | Type | Description |
-| ------ | ------ | ------ |
-| <a id="key-7"></a> `key` | `number` | The numeric key identifier for the entity. |
-| <a id="name-2"></a> `name` | `string` | The human-readable display name of the entity. |
-| <a id="objectid"></a> `objectId` | `string` | The unique object ID of the entity (used for entity IDs). |
-| <a id="type-7"></a> `type` | `string` | The type of entity (e.g., "switch", "light", "cover"). |
 
 ***
 
@@ -752,10 +737,10 @@ on `type` to discriminate, `key` for wire identity, and `entity` for human-reada
 | Property | Type | Overrides | Inherited from |
 | ------ | ------ | ------ | ------ |
 | <a id="deviceid-7"></a> `deviceId?` | `number` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`deviceId`](#deviceid-17) |
-| <a id="entity-8"></a> `entity` | `string` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`entity`](#entity-18) |
+| <a id="entity-7"></a> `entity` | `string` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`entity`](#entity-17) |
 | <a id="eventtype"></a> `eventType?` | `string` | - | `Omit.eventType` |
-| <a id="key-8"></a> `key` | `number` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`key`](#key-19) |
-| <a id="type-8"></a> `type` | `"event"` | [`TelemetryBaseEvent`](#telemetrybaseevent).[`type`](#type-20) | - |
+| <a id="key-7"></a> `key` | `number` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`key`](#key-18) |
+| <a id="type-7"></a> `type` | `"event"` | [`TelemetryBaseEvent`](#telemetrybaseevent).[`type`](#type-19) | - |
 
 ***
 
@@ -793,13 +778,43 @@ on `type` to discriminate, `key` for wire identity, and `entity` for human-reada
 | ------ | ------ | ------ | ------ |
 | <a id="deviceid-8"></a> `deviceId?` | `number` | [`TelemetryBaseEvent`](#telemetrybaseevent).[`deviceId`](#deviceid-17) | - |
 | <a id="direction"></a> `direction?` | `number` | - | - |
-| <a id="entity-9"></a> `entity` | `string` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`entity`](#entity-18) |
-| <a id="key-9"></a> `key` | `number` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`key`](#key-19) |
+| <a id="entity-8"></a> `entity` | `string` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`entity`](#entity-17) |
+| <a id="key-8"></a> `key` | `number` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`key`](#key-18) |
 | <a id="oscillating"></a> `oscillating?` | `boolean` | - | - |
 | <a id="presetmode"></a> `presetMode?` | `string` | - | - |
 | <a id="speedlevel"></a> `speedLevel?` | `number` | - | - |
 | <a id="state-2"></a> `state?` | `boolean` | - | - |
-| <a id="type-9"></a> `type` | `"fan"` | [`TelemetryBaseEvent`](#telemetrybaseevent).[`type`](#type-20) | - |
+| <a id="type-8"></a> `type` | `"fan"` | [`TelemetryBaseEvent`](#telemetrybaseevent).[`type`](#type-19) | - |
+
+***
+
+### HomeAssistantServiceEvent
+
+Home Assistant service call event data. This is emitted when an ESPHome device triggers a `homeassistant.action` or `homeassistant.service` call.
+
+#### Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="data"></a> `data` | `Record`\<`string`, `string`\> | Key-value data for the service call. |
+| <a id="datatemplate"></a> `dataTemplate` | `Record`\<`string`, `string`\> | Templated key-value data for the service call. |
+| <a id="isevent"></a> `isEvent` | `boolean` | Whether this is an event (true) or a service call (false). |
+| <a id="service"></a> `service` | `string` | The service being called (e.g., "notify.html5"). |
+| <a id="variables"></a> `variables` | `Record`\<`string`, `string`\> | Variables for template rendering. |
+
+***
+
+### HomeAssistantStateRequest
+
+Home Assistant state request event data. This is emitted when an ESPHome device requests the state of a Home Assistant entity.
+
+#### Properties
+
+| Property | Type | Description |
+| ------ | ------ | ------ |
+| <a id="attribute"></a> `attribute` | `string` | The specific attribute being requested (empty string if requesting the main state). |
+| <a id="entityid"></a> `entityId` | `string` | The Home Assistant entity ID being requested. |
+| <a id="once-2"></a> `once` | `boolean` | Whether this is a one-time request (true) or a subscription (false). |
 
 ***
 
@@ -824,12 +839,12 @@ on `type` to discriminate, `key` for wire identity, and `entity` for human-reada
 | <a id="colortemperature"></a> `colorTemperature?` | `number` | - | `Omit.colorTemperature` |
 | <a id="deviceid-9"></a> `deviceId?` | `number` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`deviceId`](#deviceid-17) |
 | <a id="effect"></a> `effect?` | `string` | - | `Omit.effect` |
-| <a id="entity-10"></a> `entity` | `string` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`entity`](#entity-18) |
+| <a id="entity-9"></a> `entity` | `string` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`entity`](#entity-17) |
 | <a id="green"></a> `green?` | `number` | - | `Omit.green` |
-| <a id="key-10"></a> `key` | `number` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`key`](#key-19) |
+| <a id="key-9"></a> `key` | `number` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`key`](#key-18) |
 | <a id="red"></a> `red?` | `number` | - | `Omit.red` |
 | <a id="state-3"></a> `state?` | `boolean` | - | `Omit.state` |
-| <a id="type-10"></a> `type` | `"light"` | [`TelemetryBaseEvent`](#telemetrybaseevent).[`type`](#type-20) | - |
+| <a id="type-9"></a> `type` | `"light"` | [`TelemetryBaseEvent`](#telemetrybaseevent).[`type`](#type-19) | - |
 | <a id="value-1"></a> `value?` | `string` \| `number` | - | `Omit.value` |
 | <a id="warmwhite"></a> `warmWhite?` | `number` | - | `Omit.warmWhite` |
 | <a id="white-1"></a> `white?` | `number` | - | `Omit.white` |
@@ -850,10 +865,10 @@ on `type` to discriminate, `key` for wire identity, and `entity` for human-reada
 | Property | Type | Overrides | Inherited from |
 | ------ | ------ | ------ | ------ |
 | <a id="deviceid-10"></a> `deviceId?` | `number` | [`TelemetryBaseEvent`](#telemetrybaseevent).[`deviceId`](#deviceid-17) | - |
-| <a id="entity-11"></a> `entity` | `string` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`entity`](#entity-18) |
-| <a id="key-11"></a> `key` | `number` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`key`](#key-19) |
+| <a id="entity-10"></a> `entity` | `string` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`entity`](#entity-17) |
+| <a id="key-10"></a> `key` | `number` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`key`](#key-18) |
 | <a id="state-4"></a> `state?` | `number` | - | - |
-| <a id="type-11"></a> `type` | `"lock"` | [`TelemetryBaseEvent`](#telemetrybaseevent).[`type`](#type-20) | - |
+| <a id="type-10"></a> `type` | `"lock"` | [`TelemetryBaseEvent`](#telemetrybaseevent).[`type`](#type-19) | - |
 
 ***
 
@@ -885,11 +900,11 @@ on `type` to discriminate, `key` for wire identity, and `entity` for human-reada
 | Property | Type | Overrides | Inherited from |
 | ------ | ------ | ------ | ------ |
 | <a id="deviceid-11"></a> `deviceId?` | `number` | [`TelemetryBaseEvent`](#telemetrybaseevent).[`deviceId`](#deviceid-17) | - |
-| <a id="entity-12"></a> `entity` | `string` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`entity`](#entity-18) |
-| <a id="key-12"></a> `key` | `number` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`key`](#key-19) |
+| <a id="entity-11"></a> `entity` | `string` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`entity`](#entity-17) |
+| <a id="key-11"></a> `key` | `number` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`key`](#key-18) |
 | <a id="muted"></a> `muted?` | `boolean` | - | - |
 | <a id="state-5"></a> `state?` | `number` | - | - |
-| <a id="type-12"></a> `type` | `"media_player"` | [`TelemetryBaseEvent`](#telemetrybaseevent).[`type`](#type-20) | - |
+| <a id="type-11"></a> `type` | `"media_player"` | [`TelemetryBaseEvent`](#telemetrybaseevent).[`type`](#type-19) | - |
 | <a id="volume"></a> `volume?` | `number` | - | - |
 
 ***
@@ -903,7 +918,7 @@ Message event data. This structure is emitted with the 'message' event for raw p
 | Property | Type |
 | ------ | ------ |
 | <a id="payload"></a> `payload` | `Buffer` |
-| <a id="type-13"></a> `type` | `number` |
+| <a id="type-12"></a> `type` | `number` |
 
 ***
 
@@ -921,11 +936,11 @@ on `type` to discriminate, `key` for wire identity, and `entity` for human-reada
 | Property | Type | Overrides | Inherited from |
 | ------ | ------ | ------ | ------ |
 | <a id="deviceid-12"></a> `deviceId?` | `number` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`deviceId`](#deviceid-17) |
-| <a id="entity-13"></a> `entity` | `string` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`entity`](#entity-18) |
-| <a id="key-13"></a> `key` | `number` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`key`](#key-19) |
+| <a id="entity-12"></a> `entity` | `string` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`entity`](#entity-17) |
+| <a id="key-12"></a> `key` | `number` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`key`](#key-18) |
 | <a id="missingstate-3"></a> `missingState?` | `boolean` | - | - |
 | <a id="state-6"></a> `state?` | `number` | - | - |
-| <a id="type-14"></a> `type` | `"number"` | [`TelemetryBaseEvent`](#telemetrybaseevent).[`type`](#type-20) | - |
+| <a id="type-13"></a> `type` | `"number"` | [`TelemetryBaseEvent`](#telemetrybaseevent).[`type`](#type-19) | - |
 
 ***
 
@@ -943,11 +958,11 @@ on `type` to discriminate, `key` for wire identity, and `entity` for human-reada
 | Property | Type | Overrides | Inherited from |
 | ------ | ------ | ------ | ------ |
 | <a id="deviceid-13"></a> `deviceId?` | `number` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`deviceId`](#deviceid-17) |
-| <a id="entity-14"></a> `entity` | `string` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`entity`](#entity-18) |
-| <a id="key-14"></a> `key` | `number` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`key`](#key-19) |
+| <a id="entity-13"></a> `entity` | `string` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`entity`](#entity-17) |
+| <a id="key-13"></a> `key` | `number` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`key`](#key-18) |
 | <a id="missingstate-4"></a> `missingState?` | `boolean` | - | - |
 | <a id="state-7"></a> `state?` | `string` | - | - |
-| <a id="type-15"></a> `type` | `"select"` | [`TelemetryBaseEvent`](#telemetrybaseevent).[`type`](#type-20) | - |
+| <a id="type-14"></a> `type` | `"select"` | [`TelemetryBaseEvent`](#telemetrybaseevent).[`type`](#type-19) | - |
 
 ***
 
@@ -965,11 +980,11 @@ on `type` to discriminate, `key` for wire identity, and `entity` for human-reada
 | Property | Type | Overrides | Inherited from |
 | ------ | ------ | ------ | ------ |
 | <a id="deviceid-14"></a> `deviceId?` | `number` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`deviceId`](#deviceid-17) |
-| <a id="entity-15"></a> `entity` | `string` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`entity`](#entity-18) |
-| <a id="key-15"></a> `key` | `number` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`key`](#key-19) |
+| <a id="entity-14"></a> `entity` | `string` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`entity`](#entity-17) |
+| <a id="key-14"></a> `key` | `number` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`key`](#key-18) |
 | <a id="missingstate-5"></a> `missingState?` | `boolean` | - | - |
 | <a id="state-8"></a> `state?` | `number` | - | - |
-| <a id="type-16"></a> `type` | `"sensor"` | [`TelemetryBaseEvent`](#telemetrybaseevent).[`type`](#type-20) | - |
+| <a id="type-15"></a> `type` | `"sensor"` | [`TelemetryBaseEvent`](#telemetrybaseevent).[`type`](#type-19) | - |
 
 ***
 
@@ -981,8 +996,8 @@ Represents a user-defined service argument definition.
 
 | Property | Type | Description |
 | ------ | ------ | ------ |
-| <a id="name-3"></a> `name` | `string` | The name of the argument. |
-| <a id="type-17"></a> `type` | [`ServiceArgType`](#serviceargtype) | The type of the argument (from ServiceArgType enum). |
+| <a id="name-2"></a> `name` | `string` | The name of the argument. |
+| <a id="type-16"></a> `type` | [`ServiceArgType`](#serviceargtype) | The type of the argument (from ServiceArgType enum). |
 
 ***
 
@@ -995,8 +1010,8 @@ Represents a user-defined service entity.
 | Property | Type | Description |
 | ------ | ------ | ------ |
 | <a id="args"></a> `args` | [`ServiceArgument`](#serviceargument)[] | The list of arguments the service accepts. |
-| <a id="key-16"></a> `key` | `number` | The unique numeric identifier for the service. |
-| <a id="name-4"></a> `name` | `string` | The name of the service. |
+| <a id="key-15"></a> `key` | `number` | The unique numeric identifier for the service. |
+| <a id="name-3"></a> `name` | `string` | The name of the service. |
 
 ***
 
@@ -1014,10 +1029,10 @@ on `type` to discriminate, `key` for wire identity, and `entity` for human-reada
 | Property | Type | Overrides | Inherited from |
 | ------ | ------ | ------ | ------ |
 | <a id="deviceid-15"></a> `deviceId?` | `number` | [`TelemetryBaseEvent`](#telemetrybaseevent).[`deviceId`](#deviceid-17) | - |
-| <a id="entity-16"></a> `entity` | `string` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`entity`](#entity-18) |
-| <a id="key-17"></a> `key` | `number` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`key`](#key-19) |
+| <a id="entity-15"></a> `entity` | `string` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`entity`](#entity-17) |
+| <a id="key-16"></a> `key` | `number` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`key`](#key-18) |
 | <a id="state-9"></a> `state?` | `boolean` | - | - |
-| <a id="type-18"></a> `type` | `"siren"` | [`TelemetryBaseEvent`](#telemetrybaseevent).[`type`](#type-20) | - |
+| <a id="type-17"></a> `type` | `"siren"` | [`TelemetryBaseEvent`](#telemetrybaseevent).[`type`](#type-19) | - |
 
 ***
 
@@ -1035,10 +1050,10 @@ on `type` to discriminate, `key` for wire identity, and `entity` for human-reada
 | Property | Type | Overrides | Inherited from |
 | ------ | ------ | ------ | ------ |
 | <a id="deviceid-16"></a> `deviceId?` | `number` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`deviceId`](#deviceid-17) |
-| <a id="entity-17"></a> `entity` | `string` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`entity`](#entity-18) |
-| <a id="key-18"></a> `key` | `number` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`key`](#key-19) |
+| <a id="entity-16"></a> `entity` | `string` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`entity`](#entity-17) |
+| <a id="key-17"></a> `key` | `number` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`key`](#key-18) |
 | <a id="state-10"></a> `state?` | `boolean` | - | - |
-| <a id="type-19"></a> `type` | `"switch"` | [`TelemetryBaseEvent`](#telemetrybaseevent).[`type`](#type-20) | - |
+| <a id="type-18"></a> `type` | `"switch"` | [`TelemetryBaseEvent`](#telemetrybaseevent).[`type`](#type-19) | - |
 
 ***
 
@@ -1077,9 +1092,9 @@ on `type` to discriminate, `key` for wire identity, and `entity` for human-reada
 | Property | Type |
 | ------ | ------ |
 | <a id="deviceid-17"></a> `deviceId?` | `number` |
-| <a id="entity-18"></a> `entity` | `string` |
-| <a id="key-19"></a> `key` | `number` |
-| <a id="type-20"></a> `type` | [`TelemetryEventType`](#telemetryeventtype) |
+| <a id="entity-17"></a> `entity` | `string` |
+| <a id="key-18"></a> `key` | `number` |
+| <a id="type-19"></a> `type` | [`TelemetryEventType`](#telemetryeventtype) |
 
 ***
 
@@ -1097,11 +1112,11 @@ on `type` to discriminate, `key` for wire identity, and `entity` for human-reada
 | Property | Type | Overrides | Inherited from |
 | ------ | ------ | ------ | ------ |
 | <a id="deviceid-18"></a> `deviceId?` | `number` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`deviceId`](#deviceid-17) |
-| <a id="entity-19"></a> `entity` | `string` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`entity`](#entity-18) |
-| <a id="key-20"></a> `key` | `number` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`key`](#key-19) |
+| <a id="entity-18"></a> `entity` | `string` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`entity`](#entity-17) |
+| <a id="key-19"></a> `key` | `number` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`key`](#key-18) |
 | <a id="missingstate-6"></a> `missingState?` | `boolean` | - | - |
 | <a id="state-11"></a> `state?` | `string` | - | - |
-| <a id="type-21"></a> `type` | `"text"` | [`TelemetryBaseEvent`](#telemetrybaseevent).[`type`](#type-20) | - |
+| <a id="type-20"></a> `type` | `"text"` | [`TelemetryBaseEvent`](#telemetrybaseevent).[`type`](#type-19) | - |
 
 ***
 
@@ -1119,11 +1134,11 @@ on `type` to discriminate, `key` for wire identity, and `entity` for human-reada
 | Property | Type | Overrides | Inherited from |
 | ------ | ------ | ------ | ------ |
 | <a id="deviceid-19"></a> `deviceId?` | `number` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`deviceId`](#deviceid-17) |
-| <a id="entity-20"></a> `entity` | `string` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`entity`](#entity-18) |
-| <a id="key-21"></a> `key` | `number` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`key`](#key-19) |
+| <a id="entity-19"></a> `entity` | `string` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`entity`](#entity-17) |
+| <a id="key-20"></a> `key` | `number` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`key`](#key-18) |
 | <a id="missingstate-7"></a> `missingState?` | `boolean` | - | - |
 | <a id="state-12"></a> `state?` | `string` | - | - |
-| <a id="type-22"></a> `type` | `"text_sensor"` | [`TelemetryBaseEvent`](#telemetrybaseevent).[`type`](#type-20) | - |
+| <a id="type-21"></a> `type` | `"text_sensor"` | [`TelemetryBaseEvent`](#telemetrybaseevent).[`type`](#type-19) | - |
 
 ***
 
@@ -1141,13 +1156,13 @@ on `type` to discriminate, `key` for wire identity, and `entity` for human-reada
 | Property | Type | Overrides | Inherited from |
 | ------ | ------ | ------ | ------ |
 | <a id="deviceid-20"></a> `deviceId?` | `number` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`deviceId`](#deviceid-17) |
-| <a id="entity-21"></a> `entity` | `string` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`entity`](#entity-18) |
+| <a id="entity-20"></a> `entity` | `string` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`entity`](#entity-17) |
 | <a id="hour"></a> `hour?` | `number` | - | - |
-| <a id="key-22"></a> `key` | `number` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`key`](#key-19) |
+| <a id="key-21"></a> `key` | `number` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`key`](#key-18) |
 | <a id="minute"></a> `minute?` | `number` | - | - |
 | <a id="missingstate-8"></a> `missingState?` | `boolean` | - | - |
 | <a id="second"></a> `second?` | `number` | - | - |
-| <a id="type-23"></a> `type` | `"time"` | [`TelemetryBaseEvent`](#telemetrybaseevent).[`type`](#type-20) | - |
+| <a id="type-22"></a> `type` | `"time"` | [`TelemetryBaseEvent`](#telemetrybaseevent).[`type`](#type-19) | - |
 
 ***
 
@@ -1166,17 +1181,17 @@ on `type` to discriminate, `key` for wire identity, and `entity` for human-reada
 | ------ | ------ | ------ | ------ |
 | <a id="currentversion"></a> `currentVersion?` | `string` | - | - |
 | <a id="deviceid-21"></a> `deviceId?` | `number` | [`TelemetryBaseEvent`](#telemetrybaseevent).[`deviceId`](#deviceid-17) | - |
-| <a id="entity-22"></a> `entity` | `string` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`entity`](#entity-18) |
+| <a id="entity-21"></a> `entity` | `string` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`entity`](#entity-17) |
 | <a id="hasprogress"></a> `hasProgress?` | `boolean` | - | - |
 | <a id="inprogress"></a> `inProgress?` | `boolean` | - | - |
-| <a id="key-23"></a> `key` | `number` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`key`](#key-19) |
+| <a id="key-22"></a> `key` | `number` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`key`](#key-18) |
 | <a id="latestversion"></a> `latestVersion?` | `string` | - | - |
 | <a id="missingstate-9"></a> `missingState?` | `boolean` | - | - |
 | <a id="progress"></a> `progress?` | `number` | - | - |
 | <a id="releasesummary"></a> `releaseSummary?` | `string` | - | - |
 | <a id="releaseurl"></a> `releaseUrl?` | `string` | - | - |
 | <a id="title"></a> `title?` | `string` | - | - |
-| <a id="type-24"></a> `type` | `"update"` | [`TelemetryBaseEvent`](#telemetrybaseevent).[`type`](#type-20) | - |
+| <a id="type-23"></a> `type` | `"update"` | [`TelemetryBaseEvent`](#telemetrybaseevent).[`type`](#type-19) | - |
 
 ***
 
@@ -1195,10 +1210,10 @@ on `type` to discriminate, `key` for wire identity, and `entity` for human-reada
 | ------ | ------ | ------ | ------ |
 | <a id="currentoperation-1"></a> `currentOperation?` | `number` | - | `Omit.currentOperation` |
 | <a id="deviceid-22"></a> `deviceId?` | `number` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`deviceId`](#deviceid-17) |
-| <a id="entity-23"></a> `entity` | `string` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`entity`](#entity-18) |
-| <a id="key-24"></a> `key` | `number` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`key`](#key-19) |
+| <a id="entity-22"></a> `entity` | `string` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`entity`](#entity-17) |
+| <a id="key-23"></a> `key` | `number` | - | [`TelemetryBaseEvent`](#telemetrybaseevent).[`key`](#key-18) |
 | <a id="position-1"></a> `position?` | `string` \| `number` | - | `Omit.position` |
-| <a id="type-25"></a> `type` | `"valve"` | [`TelemetryBaseEvent`](#telemetrybaseevent).[`type`](#type-20) | - |
+| <a id="type-24"></a> `type` | `"valve"` | [`TelemetryBaseEvent`](#telemetrybaseevent).[`type`](#type-19) | - |
 | <a id="value-2"></a> `value?` | `string` \| `number` | - | `Omit.value` |
 
 ***
@@ -1225,7 +1240,7 @@ Voice assistant event data that provides additional information about an event.
 
 | Property | Type | Description |
 | ------ | ------ | ------ |
-| <a id="name-5"></a> `name` | `string` | The name of the event data field. |
+| <a id="name-4"></a> `name` | `string` | The name of the event data field. |
 | <a id="value-3"></a> `value` | `string` | The value of the event data field. |
 
 ***
@@ -1240,7 +1255,7 @@ Voice assistant timer event data.
 | ------ | ------ | ------ |
 | <a id="eventtype-1"></a> `eventType` | [`VoiceAssistantTimerEvent`](#voiceassistanttimerevent) | The type of timer event. |
 | <a id="isactive"></a> `isActive` | `boolean` | Whether the timer is currently active. |
-| <a id="name-6"></a> `name` | `string` | The name of the timer. |
+| <a id="name-5"></a> `name` | `string` | The name of the timer. |
 | <a id="secondsleft"></a> `secondsLeft` | `number` | The remaining time in seconds. |
 | <a id="timerid"></a> `timerId` | `string` | The unique identifier for the timer. |
 | <a id="totalseconds"></a> `totalSeconds` | `number` | The total duration of the timer in seconds. |
@@ -1324,6 +1339,186 @@ type TelemetryEventType =
 
 This union enumerates every telemetry family we currently support. We use these literal strings as the discriminant on the `type` property in every telemetry payload.
 Doing so allows consumers to narrow by `type` and receive precise typing.
+
+## References
+
+### AlarmControlPanelEntity
+
+Re-exports [AlarmControlPanelEntity](entity-types.md#alarmcontrolpanelentity)
+
+***
+
+### BaseEntity
+
+Re-exports [BaseEntity](entity-types.md#baseentity)
+
+***
+
+### BinarySensorEntity
+
+Re-exports [BinarySensorEntity](entity-types.md#binarysensorentity)
+
+***
+
+### ButtonEntity
+
+Re-exports [ButtonEntity](entity-types.md#buttonentity)
+
+***
+
+### CameraEntity
+
+Re-exports [CameraEntity](entity-types.md#cameraentity)
+
+***
+
+### ClimateEntity
+
+Re-exports [ClimateEntity](entity-types.md#climateentity)
+
+***
+
+### CoverEntity
+
+Re-exports [CoverEntity](entity-types.md#coverentity)
+
+***
+
+### DateEntity
+
+Re-exports [DateEntity](entity-types.md#dateentity)
+
+***
+
+### DateTimeEntity
+
+Re-exports [DateTimeEntity](entity-types.md#datetimeentity)
+
+***
+
+### Entity
+
+Re-exports [Entity](entity-types.md#entity)
+
+***
+
+### EntityCategory
+
+Re-exports [EntityCategory](entity-types.md#entitycategory)
+
+***
+
+### EntityType
+
+Re-exports [EntityType](entity-types.md#entitytype)
+
+***
+
+### EventEntity
+
+Re-exports [EventEntity](entity-types.md#evententity)
+
+***
+
+### FanEntity
+
+Re-exports [FanEntity](entity-types.md#fanentity)
+
+***
+
+### LightEntity
+
+Re-exports [LightEntity](entity-types.md#lightentity)
+
+***
+
+### LockEntity
+
+Re-exports [LockEntity](entity-types.md#lockentity)
+
+***
+
+### MediaPlayerEntity
+
+Re-exports [MediaPlayerEntity](entity-types.md#mediaplayerentity)
+
+***
+
+### NumberEntity
+
+Re-exports [NumberEntity](entity-types.md#numberentity)
+
+***
+
+### NumberMode
+
+Re-exports [NumberMode](entity-types.md#numbermode)
+
+***
+
+### SelectEntity
+
+Re-exports [SelectEntity](entity-types.md#selectentity)
+
+***
+
+### SensorEntity
+
+Re-exports [SensorEntity](entity-types.md#sensorentity)
+
+***
+
+### SirenEntity
+
+Re-exports [SirenEntity](entity-types.md#sirenentity)
+
+***
+
+### StateClass
+
+Re-exports [StateClass](entity-types.md#stateclass)
+
+***
+
+### SwitchEntity
+
+Re-exports [SwitchEntity](entity-types.md#switchentity)
+
+***
+
+### TextEntity
+
+Re-exports [TextEntity](entity-types.md#textentity)
+
+***
+
+### TextMode
+
+Re-exports [TextMode](entity-types.md#textmode)
+
+***
+
+### TextSensorEntity
+
+Re-exports [TextSensorEntity](entity-types.md#textsensorentity)
+
+***
+
+### TimeEntity
+
+Re-exports [TimeEntity](entity-types.md#timeentity)
+
+***
+
+### UpdateEntity
+
+Re-exports [UpdateEntity](entity-types.md#updateentity)
+
+***
+
+### ValveEntity
+
+Re-exports [ValveEntity](entity-types.md#valveentity)
 
 ## Events
 
@@ -1683,7 +1878,7 @@ Get all entities with their IDs. This returns the complete list of entities with
 
 ###### Returns
 
-[`Entity`](#entity-7) & \{
+[`Entity`](entity-types.md#entity) & \{
   `id`: `string`;
 \}[]
 
@@ -1705,7 +1900,7 @@ Get entity information by ID. This retrieves full entity details given its strin
 
 ###### Returns
 
-[`Nullable`](types.md#nullable)\<[`Entity`](#entity-7)\>
+[`Nullable`](types.md#nullable)\<[`Entity`](entity-types.md#entity)\>
 
 The entity information or `null` if not found.
 
@@ -1939,7 +2134,7 @@ Sends an AlarmControlPanelCommandRequest to control an alarm panel entity. Alarm
 | Parameter | Type | Description |
 | ------ | ------ | ------ |
 | `id` | `string` | The entity ID (format: "alarm_control_panel-object_id"). |
-| `command` | \| `"disarm"` \| `"arm_home"` \| `"arm_away"` \| `"arm_night"` \| `"arm_vacation"` \| `"arm_custom_bypass"` \| `"trigger"` | The command: "disarm", "arm_home", "arm_away", "arm_night", "arm_vacation", "arm_custom_bypass", "trigger". |
+| `command` | \| `"arm_away"` \| `"arm_custom_bypass"` \| `"arm_home"` \| `"arm_night"` \| `"arm_vacation"` \| `"disarm"` \| `"trigger"` | The command: "disarm", "arm_home", "arm_away", "arm_night", "arm_vacation", "arm_custom_bypass", "trigger". |
 | `code?` | `string` | Optional alarm code for arming/disarming (field 3). |
 
 ###### Returns
@@ -2033,13 +2228,13 @@ control over temperature, fan modes, swing modes, and operating modes.
 | Parameter | Type | Description |
 | ------ | ------ | ------ |
 | `id` | `string` | The entity ID (format: "climate-object_id"). |
-| `options` | \{ `customFanMode?`: `string`; `customPreset?`: `string`; `fanMode?`: \| `"auto"` \| `"high"` \| `"low"` \| `"medium"` \| `"off"` \| `"middle"` \| `"focus"` \| `"on"` \| `"diffuse"` \| `"quiet"`; `mode?`: `"auto"` \| `"off"` \| `"heat_cool"` \| `"cool"` \| `"heat"` \| `"fan_only"` \| `"dry"`; `preset?`: \| `"none"` \| `"home"` \| `"away"` \| `"boost"` \| `"comfort"` \| `"eco"` \| `"sleep"` \| `"activity"`; `swingMode?`: `"both"` \| `"off"` \| `"vertical"` \| `"horizontal"`; `targetHumidity?`: `number`; `targetTemperature?`: `number`; `targetTemperatureHigh?`: `number`; `targetTemperatureLow?`: `number`; \} | Command options (at least one option must be provided). |
+| `options` | \{ `customFanMode?`: `string`; `customPreset?`: `string`; `fanMode?`: \| `"auto"` \| `"high"` \| `"low"` \| `"medium"` \| `"off"` \| `"middle"` \| `"focus"` \| `"on"` \| `"diffuse"` \| `"quiet"`; `mode?`: `"auto"` \| `"off"` \| `"cool"` \| `"dry"` \| `"fan_only"` \| `"heat"` \| `"heat_cool"`; `preset?`: \| `"none"` \| `"home"` \| `"activity"` \| `"away"` \| `"boost"` \| `"comfort"` \| `"eco"` \| `"sleep"`; `swingMode?`: `"both"` \| `"off"` \| `"horizontal"` \| `"vertical"`; `targetHumidity?`: `number`; `targetTemperature?`: `number`; `targetTemperatureHigh?`: `number`; `targetTemperatureLow?`: `number`; \} | Command options (at least one option must be provided). |
 | `options.customFanMode?` | `string` | Custom fan mode string when using a custom fan configuration (optional). |
 | `options.customPreset?` | `string` | Custom preset string when using a custom preset configuration (optional). |
 | `options.fanMode?` | \| `"auto"` \| `"high"` \| `"low"` \| `"medium"` \| `"off"` \| `"middle"` \| `"focus"` \| `"on"` \| `"diffuse"` \| `"quiet"` | Fan mode: "on", "off", "auto", "low", "medium", "high", "middle", "focus", "diffuse", "quiet" (optional). |
-| `options.mode?` | `"auto"` \| `"off"` \| `"heat_cool"` \| `"cool"` \| `"heat"` \| `"fan_only"` \| `"dry"` | Operating mode: "off", "heat_cool", "cool", "heat", "fan_only", "dry", "auto" (optional). |
-| `options.preset?` | \| `"none"` \| `"home"` \| `"away"` \| `"boost"` \| `"comfort"` \| `"eco"` \| `"sleep"` \| `"activity"` | Preset mode: "none", "home", "away", "boost", "comfort", "eco", "sleep", "activity" (optional). |
-| `options.swingMode?` | `"both"` \| `"off"` \| `"vertical"` \| `"horizontal"` | Swing mode: "off", "both", "vertical", "horizontal" (optional). |
+| `options.mode?` | `"auto"` \| `"off"` \| `"cool"` \| `"dry"` \| `"fan_only"` \| `"heat"` \| `"heat_cool"` | Operating mode: "off", "heat_cool", "cool", "heat", "fan_only", "dry", "auto" (optional). |
+| `options.preset?` | \| `"none"` \| `"home"` \| `"activity"` \| `"away"` \| `"boost"` \| `"comfort"` \| `"eco"` \| `"sleep"` | Preset mode: "none", "home", "away", "boost", "comfort", "eco", "sleep", "activity" (optional). |
+| `options.swingMode?` | `"both"` \| `"off"` \| `"horizontal"` \| `"vertical"` | Swing mode: "off", "both", "vertical", "horizontal" (optional). |
 | `options.targetHumidity?` | `number` | Target humidity percentage 0-100 (optional). |
 | `options.targetTemperature?` | `number` | Target temperature in the unit configured on the device (optional). |
 | `options.targetTemperatureHigh?` | `number` | High point for heat_cool mode in the unit configured on the device (optional). |
@@ -2239,6 +2434,40 @@ await client.sendFanCommand("fan-bedroom_fan", { presetMode: "sleep" });
 
 // Turn off fan
 await client.sendFanCommand("fan-bedroom_fan", { state: false });
+```
+
+##### sendHomeAssistantState()
+
+```ts
+sendHomeAssistantState(
+   entityId, 
+   state, 
+   attribute): void;
+```
+
+Send a Home Assistant entity state to the ESPHome device. This is used to respond to `homeassistantStateRequest` events when the device needs the current state
+of a Home Assistant entity.
+
+###### Parameters
+
+| Parameter | Type | Default value | Description |
+| ------ | ------ | ------ | ------ |
+| `entityId` | `string` | `undefined` | The Home Assistant entity ID. |
+| `state` | `string` | `undefined` | The current state value as a string. |
+| `attribute` | `string` | `""` | The specific attribute (optional, empty string for main state). |
+
+###### Returns
+
+`void`
+
+###### Example
+
+```typescript
+// Send state for the main entity state.
+client.sendHomeAssistantState("sensor.temperature", "21.5");
+
+// Send state for a specific attribute.
+client.sendHomeAssistantState("climate.living_room", "22", "temperature");
 ```
 
 ##### sendLightCommand()
@@ -2911,6 +3140,62 @@ Set voice assistant configuration on the device.
 ```typescript
 // Set active wake words
 client.setVoiceAssistantConfiguration(["alexa", "hey_google"]);
+```
+
+##### subscribeHomeAssistantServices()
+
+```ts
+subscribeHomeAssistantServices(): void;
+```
+
+Subscribe to Home Assistant service calls from the ESPHome device. When subscribed, the client will receive `homeassistantService` events whenever the device
+triggers a `homeassistant.action` or `homeassistant.service` call in its ESPHome configuration.
+
+###### Returns
+
+`void`
+
+###### Example
+
+```typescript
+// Subscribe to Home Assistant service calls.
+client.subscribeHomeAssistantServices();
+
+// Handle service call events.
+client.on("homeassistantService", (event) => {
+
+  console.log("Service: " + event.service);
+  console.log("Data: " + JSON.stringify(event.data));
+});
+```
+
+##### subscribeHomeAssistantStates()
+
+```ts
+subscribeHomeAssistantStates(): void;
+```
+
+Subscribe to Home Assistant state requests from the ESPHome device. When subscribed, the client will receive `homeassistantStateRequest` events whenever the
+device wants to import the state of a Home Assistant entity.
+
+###### Returns
+
+`void`
+
+###### Example
+
+```typescript
+// Subscribe to Home Assistant state requests.
+client.subscribeHomeAssistantStates();
+
+// Handle state request events and respond with the requested state.
+client.on("homeassistantStateRequest", (request) => {
+
+  // Look up the state in your system and send it back.
+  const state = getHomeAssistantState(request.entityId, request.attribute);
+
+  client.sendHomeAssistantState(request.entityId, state, request.attribute);
+});
 ```
 
 ##### subscribeToLogs()
